@@ -3,83 +3,126 @@
 <head>
 <meta charset="UTF-8">
 <title>Central de Atendimento</title>
+
 <style>
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     background: #f4f4f4;
 }
+
 header {
     background: #2f3e46;
     color: #fff;
-    padding: 12px;
+    padding: 14px;
     text-align: center;
     font-weight: bold;
     position: relative;
 }
+
 .gear {
     position: absolute;
-    right: 12px;
-    top: 12px;
+    right: 14px;
+    top: 14px;
     cursor: pointer;
 }
+
 .tabs {
     display: flex;
     background: #cad2c5;
 }
+
 .tab {
     padding: 10px 16px;
     cursor: pointer;
     border-right: 1px solid #999;
 }
+
 .tab.active {
     background: #fff;
     font-weight: bold;
 }
+
 .content {
     display: none;
     padding: 16px;
     background: #fff;
-    height: calc(100vh - 90px);
+    height: calc(100vh - 95px);
     overflow-y: auto;
 }
+
 .content.active {
     display: block;
 }
+
 label {
     font-weight: bold;
     display: block;
     margin-top: 10px;
 }
+
 input, textarea {
     width: 100%;
-    padding: 6px;
+    padding: 7px;
     margin-top: 4px;
+    box-sizing: border-box;
 }
+
 textarea {
     resize: vertical;
 }
+
 .button-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
-    margin-top: 12px;
+    margin-top: 14px;
 }
+
 button {
-    padding: 8px;
+    padding: 10px;
     cursor: pointer;
+    font-size: 14px;
 }
+
+.btn-full {
+    width: 100%;
+    margin-top: 14px;
+    font-weight: bold;
+    background: #2f3e46;
+    color: #fff;
+    border: none;
+}
+
+.btn-save {
+    width: 100%;
+    margin-top: 8px;
+    background: #84a98c;
+    color: #000;
+    border: none;
+}
+
 .modal {
     display: none;
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.4);
 }
+
 .modal-content {
     background: #fff;
-    padding: 16px;
-    width: 300px;
-    margin: 100px auto;
+    padding: 20px;
+    width: 280px;
+    margin: 120px auto;
+    text-align: center;
+}
+
+.config-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0;
+    cursor: pointer;
 }
 </style>
 </head>
@@ -97,7 +140,9 @@ CENTRAL DE ATENDIMENTO
     <div class="tab" onclick="openTab('os')">O.S.</div>
 </div>
 
+<!-- COMENTÁRIOS -->
 <div id="comentarios" class="content active">
+
     <label>Protocolo</label>
     <input id="protocolo">
 
@@ -115,7 +160,9 @@ CENTRAL DE ATENDIMENTO
         <button onclick="servicoNaoPrestado('SUPERVISORA')">Serviço não prestado – Supervisora</button>
     </div>
 
-    <button onclick="copiarComentario()">Copiar comentário</button>
+    <button class="btn-full" onclick="copiarComentario()">COPIAR COMENTÁRIO</button>
+    <button id="btnSalvar" class="btn-save" onclick="salvarComentario()">Salvar comentário</button>
+
 </div>
 
 <div id="paralelas" class="content">
@@ -129,15 +176,19 @@ CENTRAL DE ATENDIMENTO
 <!-- CONFIG -->
 <div id="config" class="modal">
     <div class="modal-content">
-        <h4>Configurações</h4>
-        <label>
-            <input type="radio" name="origem" value="CALL CENTER"> Call Center
+        <h3>Configurações</h3>
+
+        <label class="config-option">
+            <input type="radio" name="origem" value="CALL CENTER">
+            Call Center
         </label>
-        <label>
-            <input type="radio" name="origem" value="LOJA"> Loja
+
+        <label class="config-option">
+            <input type="radio" name="origem" value="LOJA">
+            Loja
         </label>
-        <br>
-        <button onclick="saveConfig()">Salvar</button>
+
+        <button class="btn-full" onclick="saveConfig()">Salvar</button>
     </div>
 </div>
 
@@ -162,6 +213,7 @@ function basePrefixo() {
 function atalho(texto) {
     const campo = document.getElementById('comentario');
     let atual = campo.value.trim();
+
     if (!atual.startsWith(getOrigem())) {
         atual = basePrefixo();
     }
@@ -181,6 +233,18 @@ function copiarComentario() {
     alert('Comentário copiado!');
 }
 
+function salvarComentario() {
+    if (getOrigem() !== 'CALL CENTER') return;
+
+    const texto = document.getElementById('comentario').value.trim();
+    if (!texto) return;
+
+    const lista = JSON.parse(localStorage.getItem('comentariosSalvos') || '[]');
+    lista.push(texto);
+    localStorage.setItem('comentariosSalvos', JSON.stringify(lista));
+    alert('Comentário salvo!');
+}
+
 function openConfig() {
     document.getElementById('config').style.display = 'block';
     document.querySelectorAll('input[name="origem"]').forEach(r => {
@@ -192,7 +256,14 @@ function saveConfig() {
     const sel = document.querySelector('input[name="origem"]:checked');
     if (sel) localStorage.setItem('origem', sel.value);
     document.getElementById('config').style.display = 'none';
+
+    document.getElementById('btnSalvar').style.display =
+        sel.value === 'CALL CENTER' ? 'block' : 'none';
 }
+
+// Inicialização
+document.getElementById('btnSalvar').style.display =
+    getOrigem() === 'CALL CENTER' ? 'block' : 'none';
 </script>
 
 </body>
