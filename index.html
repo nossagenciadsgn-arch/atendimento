@@ -1,1 +1,152 @@
-a
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Central de Atendimento</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #f4f4f4;
+    }
+    header {
+        background: #2f3e46;
+        color: #fff;
+        padding: 12px;
+        text-align: center;
+        font-weight: bold;
+    }
+    .tabs {
+        display: flex;
+        background: #cad2c5;
+    }
+    .tab {
+        padding: 10px 16px;
+        cursor: pointer;
+        border-right: 1px solid #999;
+    }
+    .tab.active {
+        background: #fff;
+        font-weight: bold;
+    }
+    .content {
+        display: none;
+        padding: 16px;
+        background: #fff;
+        height: calc(100vh - 90px);
+        overflow-y: auto;
+    }
+    .content.active {
+        display: block;
+    }
+    label {
+        font-weight: bold;
+        display: block;
+        margin-top: 10px;
+    }
+    input, textarea {
+        width: 100%;
+        padding: 6px;
+        margin-top: 4px;
+        box-sizing: border-box;
+    }
+    button {
+        margin-top: 10px;
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+    .btn-group button {
+        margin-right: 6px;
+    }
+    textarea {
+        resize: vertical;
+    }
+</style>
+</head>
+
+<body>
+
+<header>CENTRAL DE ATENDIMENTO</header>
+
+<div class="tabs">
+    <div class="tab active" onclick="openTab('paralelas')">Paralelas</div>
+    <div class="tab" onclick="openTab('comentarios')">Comentários</div>
+    <div class="tab" onclick="openTab('os')">O.S.</div>
+</div>
+
+<!-- ABA PARALELAS -->
+<div id="paralelas" class="content active">
+    <h3>Paralelas (em breve)</h3>
+    <p>Essa aba será construída depois da validação das outras.</p>
+</div>
+
+<!-- ABA COMENTÁRIOS -->
+<div id="comentarios" class="content">
+    <label>Protocolo</label>
+    <input id="protocolo">
+
+    <label>Matrícula</label>
+    <input id="matricula">
+
+    <label>Comentário</label>
+    <textarea id="comentario" rows="4"></textarea>
+
+    <div class="btn-group">
+        <button onclick="atalho('2ª FATURA AGORA - ENVIADA')">2ª via enviada</button>
+        <button onclick="atalho('VERIFICAÇÃO SITUAÇÃO ABASTECIMENTO - EXECUTADA')">Abastecimento</button>
+        <button onclick="atalho('INFORMA FALTA DE ÁGUA - ABERTURA DE SOLICITAÇÃO')">Falta de água</button>
+        <button onclick="servicoNaoPrestado('FORMS')">Serviço não prestado (Forms)</button>
+        <button onclick="servicoNaoPrestado('SUPERVISORA')">Serviço não prestado (Supervisora)</button>
+    </div>
+
+    <button onclick="copiarComentario()">Copiar comentário</button>
+</div>
+
+<!-- ABA OS -->
+<div id="os" class="content">
+    <h3>Preparação de O.S. (em breve)</h3>
+    <p>Lista lateral + formulários serão adicionados aqui.</p>
+</div>
+
+<script>
+function openTab(id) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+}
+
+function basePrefixo() {
+    const p = document.getElementById('protocolo').value.trim();
+    if (!p) return '';
+    return 'CALL CENTER PROTOCOLO: ' + p + ' - ';
+}
+
+function atalho(texto) {
+    const campo = document.getElementById('comentario');
+    let atual = campo.value.trim();
+
+    if (!atual.startsWith('CALL CENTER PROTOCOLO')) {
+        atual = basePrefixo();
+    }
+    campo.value = (atual + texto).toUpperCase();
+}
+
+function servicoNaoPrestado(destino) {
+    const tipo = prompt('Tipo de serviço:');
+    if (!tipo) return;
+
+    atalho('SERVIÇO SOLICITADO E NÃO PRESTADO - ' + tipo + ' - ENVIADO PARA ' + destino);
+}
+
+function copiarComentario() {
+    let texto = document.getElementById('comentario').value.trim();
+    if (!texto) return;
+    navigator.clipboard.writeText(texto);
+    alert('Comentário copiado!');
+}
+</script>
+
+</body>
+</html>
+
