@@ -98,7 +98,6 @@ button {
     width: 100%;
     margin-top: 8px;
     background: #84a98c;
-    color: #000;
     border: none;
 }
 
@@ -135,16 +134,16 @@ CENTRAL DE ATENDIMENTO
 </header>
 
 <div class="tabs">
-    <div class="tab active" onclick="openTab('comentarios')">Comentários</div>
-    <div class="tab" onclick="openTab('paralelas')">Paralelas</div>
-    <div class="tab" onclick="openTab('os')">O.S.</div>
+    <div class="tab active" onclick="openTab(event,'comentarios')">Comentários</div>
+    <div class="tab" onclick="openTab(event,'paralelas')">Paralelas</div>
+    <div class="tab" onclick="openTab(event,'os')">O.S.</div>
 </div>
 
-<!-- COMENTÁRIOS -->
+<!-- ABA COMENTÁRIOS -->
 <div id="comentarios" class="content active">
 
     <label>Protocolo</label>
-    <input id="protocolo">
+    <input id="protocolo" oninput="autoPrefixo()">
 
     <label>Matrícula</label>
     <input id="matricula">
@@ -162,18 +161,19 @@ CENTRAL DE ATENDIMENTO
 
     <button class="btn-full" onclick="copiarComentario()">COPIAR COMENTÁRIO</button>
     <button id="btnSalvar" class="btn-save" onclick="salvarComentario()">Salvar comentário</button>
-
 </div>
 
+<!-- ABA PARALELAS -->
 <div id="paralelas" class="content">
     <p>Em construção.</p>
 </div>
 
+<!-- ABA OS -->
 <div id="os" class="content">
     <p>Em construção.</p>
 </div>
 
-<!-- CONFIG -->
+<!-- CONFIGURAÇÕES -->
 <div id="config" class="modal">
     <div class="modal-content">
         <h3>Configurações</h3>
@@ -193,23 +193,51 @@ CENTRAL DE ATENDIMENTO
 </div>
 
 <script>
-function openTab(id) {
+// ---------- ABAS ----------
+function openTab(evt,id) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-    event.target.classList.add('active');
+    evt.target.classList.add('active');
 }
 
+// ---------- CONFIG ----------
 function getOrigem() {
     return localStorage.getItem('origem') || 'CALL CENTER';
 }
 
-function basePrefixo() {
-    const p = document.getElementById('protocolo').value.trim();
-    if (!p) return '';
-    return getOrigem() + ' PROTOCOLO: ' + p + ' - ';
+function openConfig() {
+    document.getElementById('config').style.display = 'block';
+    document.querySelectorAll('input[name="origem"]').forEach(r => {
+        r.checked = r.value === getOrigem();
+    });
 }
 
+function saveConfig() {
+    const sel = document.querySelector('input[name="origem"]:checked');
+    if (sel) localStorage.setItem('origem', sel.value);
+    document.getElementById('config').style.display = 'none';
+    atualizarBotaoSalvar();
+}
+
+// ---------- PREFIXO ----------
+function autoPrefixo() {
+    const prot = document.getElementById('protocolo').value.trim();
+    const campo = document.getElementById('comentario');
+    if (!prot) return;
+
+    if (campo.value.trim() === '') {
+        campo.value = (getOrigem() + ' PROTOCOLO: ' + prot + ' - ').toUpperCase();
+    }
+}
+
+function basePrefixo() {
+    const prot = document.getElementById('protocolo').value.trim();
+    if (!prot) return '';
+    return getOrigem() + ' PROTOCOLO: ' + prot + ' - ';
+}
+
+// ---------- ATALHOS ----------
 function atalho(texto) {
     const campo = document.getElementById('comentario');
     let atual = campo.value.trim();
@@ -226,6 +254,7 @@ function servicoNaoPrestado(destino) {
     atalho('SERVIÇO SOLICITADO E NÃO PRESTADO - ' + tipo + ' - ENVIADO PARA ' + destino);
 }
 
+// ---------- AÇÕES ----------
 function copiarComentario() {
     const texto = document.getElementById('comentario').value.trim();
     if (!texto) return;
@@ -235,7 +264,6 @@ function copiarComentario() {
 
 function salvarComentario() {
     if (getOrigem() !== 'CALL CENTER') return;
-
     const texto = document.getElementById('comentario').value.trim();
     if (!texto) return;
 
@@ -245,25 +273,13 @@ function salvarComentario() {
     alert('Comentário salvo!');
 }
 
-function openConfig() {
-    document.getElementById('config').style.display = 'block';
-    document.querySelectorAll('input[name="origem"]').forEach(r => {
-        r.checked = r.value === getOrigem();
-    });
-}
-
-function saveConfig() {
-    const sel = document.querySelector('input[name="origem"]:checked');
-    if (sel) localStorage.setItem('origem', sel.value);
-    document.getElementById('config').style.display = 'none';
-
+function atualizarBotaoSalvar() {
     document.getElementById('btnSalvar').style.display =
-        sel.value === 'CALL CENTER' ? 'block' : 'none';
+        getOrigem() === 'CALL CENTER' ? 'block' : 'none';
 }
 
-// Inicialização
-document.getElementById('btnSalvar').style.display =
-    getOrigem() === 'CALL CENTER' ? 'block' : 'none';
+// ---------- INIT ----------
+atualizarBotaoSalvar();
 </script>
 
 </body>
