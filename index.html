@@ -4,84 +4,100 @@
 <meta charset="UTF-8">
 <title>Central de Atendimento</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        background: #f4f4f4;
-    }
-    header {
-        background: #2f3e46;
-        color: #fff;
-        padding: 12px;
-        text-align: center;
-        font-weight: bold;
-    }
-    .tabs {
-        display: flex;
-        background: #cad2c5;
-    }
-    .tab {
-        padding: 10px 16px;
-        cursor: pointer;
-        border-right: 1px solid #999;
-    }
-    .tab.active {
-        background: #fff;
-        font-weight: bold;
-    }
-    .content {
-        display: none;
-        padding: 16px;
-        background: #fff;
-        height: calc(100vh - 90px);
-        overflow-y: auto;
-    }
-    .content.active {
-        display: block;
-    }
-    label {
-        font-weight: bold;
-        display: block;
-        margin-top: 10px;
-    }
-    input, textarea {
-        width: 100%;
-        padding: 6px;
-        margin-top: 4px;
-        box-sizing: border-box;
-    }
-    button {
-        margin-top: 10px;
-        padding: 8px 12px;
-        cursor: pointer;
-    }
-    .btn-group button {
-        margin-right: 6px;
-    }
-    textarea {
-        resize: vertical;
-    }
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f4f4;
+}
+header {
+    background: #2f3e46;
+    color: #fff;
+    padding: 12px;
+    text-align: center;
+    font-weight: bold;
+    position: relative;
+}
+.gear {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    cursor: pointer;
+}
+.tabs {
+    display: flex;
+    background: #cad2c5;
+}
+.tab {
+    padding: 10px 16px;
+    cursor: pointer;
+    border-right: 1px solid #999;
+}
+.tab.active {
+    background: #fff;
+    font-weight: bold;
+}
+.content {
+    display: none;
+    padding: 16px;
+    background: #fff;
+    height: calc(100vh - 90px);
+    overflow-y: auto;
+}
+.content.active {
+    display: block;
+}
+label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+}
+input, textarea {
+    width: 100%;
+    padding: 6px;
+    margin-top: 4px;
+}
+textarea {
+    resize: vertical;
+}
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+button {
+    padding: 8px;
+    cursor: pointer;
+}
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+}
+.modal-content {
+    background: #fff;
+    padding: 16px;
+    width: 300px;
+    margin: 100px auto;
+}
 </style>
 </head>
 
 <body>
 
-<header>CENTRAL DE ATENDIMENTO</header>
+<header>
+CENTRAL DE ATENDIMENTO
+<span class="gear" onclick="openConfig()">⚙️</span>
+</header>
 
 <div class="tabs">
-    <div class="tab active" onclick="openTab('paralelas')">Paralelas</div>
-    <div class="tab" onclick="openTab('comentarios')">Comentários</div>
+    <div class="tab active" onclick="openTab('comentarios')">Comentários</div>
+    <div class="tab" onclick="openTab('paralelas')">Paralelas</div>
     <div class="tab" onclick="openTab('os')">O.S.</div>
 </div>
 
-<!-- ABA PARALELAS -->
-<div id="paralelas" class="content active">
-    <h3>Paralelas (em breve)</h3>
-    <p>Essa aba será construída depois da validação das outras.</p>
-</div>
-
-<!-- ABA COMENTÁRIOS -->
-<div id="comentarios" class="content">
+<div id="comentarios" class="content active">
     <label>Protocolo</label>
     <input id="protocolo">
 
@@ -91,21 +107,38 @@
     <label>Comentário</label>
     <textarea id="comentario" rows="4"></textarea>
 
-    <div class="btn-group">
+    <div class="button-grid">
         <button onclick="atalho('2ª FATURA AGORA - ENVIADA')">2ª via enviada</button>
         <button onclick="atalho('VERIFICAÇÃO SITUAÇÃO ABASTECIMENTO - EXECUTADA')">Abastecimento</button>
         <button onclick="atalho('INFORMA FALTA DE ÁGUA - ABERTURA DE SOLICITAÇÃO')">Falta de água</button>
-        <button onclick="servicoNaoPrestado('FORMS')">Serviço não prestado (Forms)</button>
-        <button onclick="servicoNaoPrestado('SUPERVISORA')">Serviço não prestado (Supervisora)</button>
+        <button onclick="servicoNaoPrestado('FORMS')">Serviço não prestado – Forms</button>
+        <button onclick="servicoNaoPrestado('SUPERVISORA')">Serviço não prestado – Supervisora</button>
     </div>
 
     <button onclick="copiarComentario()">Copiar comentário</button>
 </div>
 
-<!-- ABA OS -->
+<div id="paralelas" class="content">
+    <p>Em construção.</p>
+</div>
+
 <div id="os" class="content">
-    <h3>Preparação de O.S. (em breve)</h3>
-    <p>Lista lateral + formulários serão adicionados aqui.</p>
+    <p>Em construção.</p>
+</div>
+
+<!-- CONFIG -->
+<div id="config" class="modal">
+    <div class="modal-content">
+        <h4>Configurações</h4>
+        <label>
+            <input type="radio" name="origem" value="CALL CENTER"> Call Center
+        </label>
+        <label>
+            <input type="radio" name="origem" value="LOJA"> Loja
+        </label>
+        <br>
+        <button onclick="saveConfig()">Salvar</button>
+    </div>
 </div>
 
 <script>
@@ -116,17 +149,20 @@ function openTab(id) {
     event.target.classList.add('active');
 }
 
+function getOrigem() {
+    return localStorage.getItem('origem') || 'CALL CENTER';
+}
+
 function basePrefixo() {
     const p = document.getElementById('protocolo').value.trim();
     if (!p) return '';
-    return 'CALL CENTER PROTOCOLO: ' + p + ' - ';
+    return getOrigem() + ' PROTOCOLO: ' + p + ' - ';
 }
 
 function atalho(texto) {
     const campo = document.getElementById('comentario');
     let atual = campo.value.trim();
-
-    if (!atual.startsWith('CALL CENTER PROTOCOLO')) {
+    if (!atual.startsWith(getOrigem())) {
         atual = basePrefixo();
     }
     campo.value = (atual + texto).toUpperCase();
@@ -135,18 +171,29 @@ function atalho(texto) {
 function servicoNaoPrestado(destino) {
     const tipo = prompt('Tipo de serviço:');
     if (!tipo) return;
-
     atalho('SERVIÇO SOLICITADO E NÃO PRESTADO - ' + tipo + ' - ENVIADO PARA ' + destino);
 }
 
 function copiarComentario() {
-    let texto = document.getElementById('comentario').value.trim();
+    const texto = document.getElementById('comentario').value.trim();
     if (!texto) return;
     navigator.clipboard.writeText(texto);
     alert('Comentário copiado!');
+}
+
+function openConfig() {
+    document.getElementById('config').style.display = 'block';
+    document.querySelectorAll('input[name="origem"]').forEach(r => {
+        r.checked = r.value === getOrigem();
+    });
+}
+
+function saveConfig() {
+    const sel = document.querySelector('input[name="origem"]:checked');
+    if (sel) localStorage.setItem('origem', sel.value);
+    document.getElementById('config').style.display = 'none';
 }
 </script>
 
 </body>
 </html>
-
