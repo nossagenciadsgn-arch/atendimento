@@ -59,18 +59,23 @@ button {
     gap: 10px;
 }
 
+/* ---------- MODAL ---------- */
 .modal {
     display: none;
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.4);
+    z-index: 10;
 }
 
 .modal-content {
     background: #fff;
     padding: 20px;
     width: 420px;
-    margin: 80px auto;
+    max-height: 80vh;
+    overflow-y: auto;
+    margin: 60px auto;
+    box-sizing: border-box;
 }
 
 label {
@@ -111,19 +116,16 @@ textarea {
     <div class="tab" onclick="openTab(event,'os')">O.S.</div>
 </div>
 
-<!-- COMENTÁRIOS (placeholder) -->
+<!-- COMENTÁRIOS -->
 <div id="comentarios" class="content">
     <p>Comentários continuam como estão.</p>
 </div>
 
 <!-- PARALELAS -->
 <div id="paralelas" class="content active">
-
     <div class="grid">
         <button onclick="abrirCancelamento()">Cancelamento de Solicitação</button>
-        <!-- próximas paralelas entram aqui -->
     </div>
-
 </div>
 
 <!-- OS -->
@@ -165,7 +167,7 @@ textarea {
 </div>
 
 <script>
-// --------- ABAS ----------
+// ---------- ABAS ----------
 function openTab(evt,id) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -173,16 +175,18 @@ function openTab(evt,id) {
     evt.target.classList.add('active');
 }
 
-// --------- MODAL ----------
+// ---------- MODAL ----------
 function abrirCancelamento() {
     document.getElementById('modalCancelamento').style.display = 'block';
+    document.body.style.overflow = 'hidden';
 }
 
 function fecharModal() {
-    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    document.getElementById('modalCancelamento').style.display = 'none';
+    document.body.style.overflow = 'auto';
 }
 
-// --------- CANCELAMENTO ----------
+// ---------- CANCELAMENTO ----------
 function copiarCancelamento() {
 
     const assinatura = `
