@@ -197,15 +197,16 @@ JÚLIA DA SILVEIRA FLORES
     const texto =
 `CANCELAMENTO DE SOLICITAÇÃO
 
-MATRÍCULA: ${canMatricula.value}
-CIDADE: ${canCidade.value}
-PROTOCOLO DO ATENDIMENTO: ${canProtocolo.value}
-SERVIÇO QUE O CLIENTE SOLICITA O CANCELAMENTO: ${canServico.value}
-Nº SOLICITAÇÃO: ${canOS.value}
-MOTIVO DO CANCELAMENTO: ${canMotivo.value}
+MATRÍCULA: ${canMatricula.value.toUpperCase()}
+CIDADE: ${canCidade.value.toUpperCase()}
+PROTOCOLO DO ATENDIMENTO: ${canProtocolo.value.toUpperCase()}
+SERVIÇO QUE O CLIENTE SOLICITA O CANCELAMENTO: ${canServico.value.toUpperCase()}
+Nº SOLICITAÇÃO: ${canOS.value.toUpperCase()}
+MOTIVO DO CANCELAMENTO: ${canMotivo.value.toUpperCase()}
 
 ${canCorpo.value}
-${assinatura}`.toUpperCase();
+
+${assinatura}`;
 
     navigator.clipboard.writeText(texto);
     alert('Texto copiado!');
