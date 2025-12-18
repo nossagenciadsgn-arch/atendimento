@@ -118,13 +118,18 @@ textarea {
 
 <!-- COMENTÁRIOS -->
 <div id="comentarios" class="content">
-    <p>Comentários continuam como estão.</p>
+    <p>Comentários seguem no arquivo original já configurado.</p>
 </div>
 
 <!-- PARALELAS -->
 <div id="paralelas" class="content active">
     <div class="grid">
-        <button onclick="abrirCancelamento()">Cancelamento de Solicitação</button>
+        <button onclick="abrirParalela('Cancelamento de Solicitação')">Cancelamento de Solicitação</button>
+        <button onclick="abrirParalela('Caminhão-pipa')">Caminhão-pipa</button>
+        <button onclick="abrirParalela('Retificação de Fatura')">Retificação de Fatura</button>
+        <button onclick="abrirParalela('Retirar Débito Automático')">Retirar Débito Automático</button>
+        <button onclick="abrirParalela('Exclusão de Cadastro Site/App')">Exclusão de Cadastro Site/App</button>
+        <button onclick="abrirParalela('Religação por Corte Indevido')">Religação por Corte Indevido</button>
     </div>
 </div>
 
@@ -133,34 +138,34 @@ textarea {
     <p>Em construção.</p>
 </div>
 
-<!-- MODAL CANCELAMENTO -->
-<div id="modalCancelamento" class="modal">
+<!-- MODAL PARALELAS -->
+<div id="modalParalela" class="modal">
     <div class="modal-content">
 
-        <h3>CANCELAMENTO DE SOLICITAÇÃO</h3>
+        <h3 id="tituloParalela"></h3>
 
         <label>Matrícula</label>
-        <input id="canMatricula">
+        <input id="pMatricula">
 
         <label>Cidade</label>
-        <input id="canCidade">
+        <input id="pCidade">
 
         <label>Protocolo do atendimento</label>
-        <input id="canProtocolo">
+        <input id="pProtocolo">
 
-        <label>Serviço que o cliente solicita o cancelamento</label>
-        <input id="canServico">
+        <label>Descrição / Serviço</label>
+        <input id="pServico">
 
-        <label>Nº solicitação</label>
-        <input id="canOS">
+        <label>Nº Solicitação / OS</label>
+        <input id="pOS">
 
-        <label>Motivo do cancelamento</label>
-        <input id="canMotivo">
+        <label>Motivo</label>
+        <input id="pMotivo">
 
         <label>Corpo do e-mail (opcional)</label>
-        <textarea id="canCorpo" rows="4"></textarea>
+        <textarea id="pCorpo" rows="4"></textarea>
 
-        <button class="btn-full" onclick="copiarCancelamento()">COPIAR TEXTO</button>
+        <button class="btn-full" onclick="copiarParalela()">COPIAR TEXTO</button>
         <button class="btn-full" onclick="fecharModal()">FECHAR</button>
 
     </div>
@@ -176,18 +181,19 @@ function openTab(evt,id) {
 }
 
 // ---------- MODAL ----------
-function abrirCancelamento() {
-    document.getElementById('modalCancelamento').style.display = 'block';
+function abrirParalela(titulo) {
+    document.getElementById('tituloParalela').innerText = titulo.toUpperCase();
+    document.getElementById('modalParalela').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
 
 function fecharModal() {
-    document.getElementById('modalCancelamento').style.display = 'none';
+    document.getElementById('modalParalela').style.display = 'none';
     document.body.style.overflow = 'auto';
 }
 
-// ---------- CANCELAMENTO ----------
-function copiarCancelamento() {
+// ---------- TEXTO ----------
+function copiarParalela() {
 
     const assinatura = `
 JÚLIA DA SILVEIRA FLORES
@@ -195,16 +201,16 @@ JÚLIA DA SILVEIRA FLORES
 `;
 
     const texto =
-`CANCELAMENTO DE SOLICITAÇÃO
+`${tituloParalela.innerText}
 
-MATRÍCULA: ${canMatricula.value.toUpperCase()}
-CIDADE: ${canCidade.value.toUpperCase()}
-PROTOCOLO DO ATENDIMENTO: ${canProtocolo.value.toUpperCase()}
-SERVIÇO QUE O CLIENTE SOLICITA O CANCELAMENTO: ${canServico.value.toUpperCase()}
-Nº SOLICITAÇÃO: ${canOS.value.toUpperCase()}
-MOTIVO DO CANCELAMENTO: ${canMotivo.value.toUpperCase()}
+MATRÍCULA: ${pMatricula.value.toUpperCase()}
+CIDADE: ${pCidade.value.toUpperCase()}
+PROTOCOLO DO ATENDIMENTO: ${pProtocolo.value.toUpperCase()}
+DESCRIÇÃO / SERVIÇO: ${pServico.value.toUpperCase()}
+Nº SOLICITAÇÃO / OS: ${pOS.value.toUpperCase()}
+MOTIVO: ${pMotivo.value.toUpperCase()}
 
-${canCorpo.value}
+${pCorpo.value}
 
 ${assinatura}`;
 
