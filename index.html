@@ -59,7 +59,7 @@ button {
     gap: 10px;
 }
 
-/* ---------- MODAL ---------- */
+/* MODAL */
 .modal {
     display: none;
     position: fixed;
@@ -75,7 +75,6 @@ button {
     max-height: 80vh;
     overflow-y: auto;
     margin: 60px auto;
-    box-sizing: border-box;
 }
 
 label {
@@ -88,7 +87,6 @@ input, textarea {
     width: 100%;
     padding: 7px;
     margin-top: 4px;
-    box-sizing: border-box;
 }
 
 textarea {
@@ -116,63 +114,56 @@ textarea {
     <div class="tab" onclick="openTab(event,'os')">O.S.</div>
 </div>
 
-<!-- COMENTÁRIOS -->
 <div id="comentarios" class="content">
-    <p>Comentários seguem no arquivo original já configurado.</p>
+    <p>Comentários seguem no módulo próprio.</p>
 </div>
 
-<!-- PARALELAS -->
 <div id="paralelas" class="content active">
     <div class="grid">
-        <button onclick="abrirParalela('Cancelamento de Solicitação')">Cancelamento de Solicitação</button>
-        <button onclick="abrirParalela('Caminhão-pipa')">Caminhão-pipa</button>
-        <button onclick="abrirParalela('Retificação de Fatura')">Retificação de Fatura</button>
-        <button onclick="abrirParalela('Retirar Débito Automático')">Retirar Débito Automático</button>
-        <button onclick="abrirParalela('Exclusão de Cadastro Site/App')">Exclusão de Cadastro Site/App</button>
-        <button onclick="abrirParalela('Religação por Corte Indevido')">Religação por Corte Indevido</button>
+        <button onclick="abrirParalela('caminhao')">Caminhão-pipa</button>
+        <button disabled>Cancelamento (em breve)</button>
+        <button disabled>Retificação (em breve)</button>
     </div>
 </div>
 
-<!-- OS -->
 <div id="os" class="content">
     <p>Em construção.</p>
 </div>
 
-<!-- MODAL PARALELAS -->
+<!-- MODAL -->
 <div id="modalParalela" class="modal">
     <div class="modal-content">
 
-        <h3 id="tituloParalela"></h3>
+        <h3 id="titulo"></h3>
 
-        <label>Matrícula</label>
-        <input id="pMatricula">
-
-        <label>Cidade</label>
-        <input id="pCidade">
-
-        <label>Protocolo do atendimento</label>
-        <input id="pProtocolo">
-
-        <label>Descrição / Serviço</label>
-        <input id="pServico">
-
-        <label>Nº Solicitação / OS</label>
-        <input id="pOS">
-
-        <label>Motivo</label>
-        <input id="pMotivo">
+        <div id="campos"></div>
 
         <label>Corpo do e-mail (opcional)</label>
-        <textarea id="pCorpo" rows="4"></textarea>
+        <textarea id="corpo" rows="4"></textarea>
 
-        <button class="btn-full" onclick="copiarParalela()">COPIAR TEXTO</button>
-        <button class="btn-full" onclick="fecharModal()">FECHAR</button>
+        <button class="btn-full" onclick="copiar()">COPIAR TEXTO</button>
+        <button class="btn-full" onclick="fechar()">FECHAR</button>
 
     </div>
 </div>
 
 <script>
-// ---------- ABAS ----------
+const paralelas = {
+    caminhao: {
+        titulo: "CAMINHÃO PIPA",
+        campos: [
+            "PROTOCOLO DO ATENDIMENTO",
+            "BAIRRO",
+            "CIDADE",
+            "MATRÍCULA",
+            "ENDEREÇO",
+            "CELULAR PARA CONTATO"
+        ]
+    }
+};
+
+let atual = null;
+
 function openTab(evt,id) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -180,42 +171,41 @@ function openTab(evt,id) {
     evt.target.classList.add('active');
 }
 
-// ---------- MODAL ----------
-function abrirParalela(titulo) {
-    document.getElementById('tituloParalela').innerText = titulo.toUpperCase();
+function abrirParalela(tipo) {
+    atual = paralelas[tipo];
+    document.getElementById('titulo').innerText = atual.titulo;
+
+    const area = document.getElementById('campos');
+    area.innerHTML = "";
+
+    atual.campos.forEach(c => {
+        area.innerHTML += `
+            <label>${c}</label>
+            <input data-label="${c}">
+        `;
+    });
+
     document.getElementById('modalParalela').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
 
-function fecharModal() {
+function fechar() {
     document.getElementById('modalParalela').style.display = 'none';
     document.body.style.overflow = 'auto';
 }
 
-// ---------- TEXTO ----------
-function copiarParalela() {
+function copiar() {
+    let texto = atual.titulo + "\n\n";
 
-    const assinatura = `
-JÚLIA DA SILVEIRA FLORES
-(51) 92000-6065
-`;
+    document.querySelectorAll('#campos input').forEach(i => {
+        texto += i.dataset.label + ": " + i.value.toUpperCase() + "\n";
+    });
 
-    const texto =
-`${tituloParalela.innerText}
-
-MATRÍCULA: ${pMatricula.value.toUpperCase()}
-CIDADE: ${pCidade.value.toUpperCase()}
-PROTOCOLO DO ATENDIMENTO: ${pProtocolo.value.toUpperCase()}
-DESCRIÇÃO / SERVIÇO: ${pServico.value.toUpperCase()}
-Nº SOLICITAÇÃO / OS: ${pOS.value.toUpperCase()}
-MOTIVO: ${pMotivo.value.toUpperCase()}
-
-${pCorpo.value}
-
-${assinatura}`;
+    texto += "\n" + document.getElementById('corpo').value + "\n\n";
+    texto += "JÚLIA DA SILVEIRA FLORES\n(51) 92000-6065";
 
     navigator.clipboard.writeText(texto);
-    alert('Texto copiado!');
+    alert("Texto copiado!");
 }
 </script>
 
