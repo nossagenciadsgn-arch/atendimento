@@ -17,14 +17,6 @@ header {
     padding: 14px;
     text-align: center;
     font-weight: bold;
-    position: relative;
-}
-
-.gear {
-    position: absolute;
-    right: 14px;
-    top: 14px;
-    cursor: pointer;
 }
 
 .tabs {
@@ -47,12 +39,38 @@ header {
     display: none;
     padding: 16px;
     background: #fff;
-    height: calc(100vh - 95px);
+    height: calc(100vh - 90px);
     overflow-y: auto;
 }
 
 .content.active {
     display: block;
+}
+
+button {
+    padding: 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    width: 420px;
+    margin: 80px auto;
 }
 
 label {
@@ -72,128 +90,82 @@ textarea {
     resize: vertical;
 }
 
-.button-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-top: 14px;
-}
-
-button {
-    padding: 10px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
 .btn-full {
     width: 100%;
     margin-top: 14px;
-    font-weight: bold;
     background: #2f3e46;
     color: #fff;
     border: none;
-}
-
-.btn-save {
-    width: 100%;
-    margin-top: 8px;
-    background: #84a98c;
-    border: none;
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-}
-
-.modal-content {
-    background: #fff;
-    padding: 20px;
-    width: 280px;
-    margin: 120px auto;
-    text-align: center;
-}
-
-.config-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 10px 0;
-    cursor: pointer;
+    font-weight: bold;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-CENTRAL DE ATENDIMENTO
-<span class="gear" onclick="openConfig()">⚙️</span>
-</header>
+<header>CENTRAL DE ATENDIMENTO</header>
 
 <div class="tabs">
-    <div class="tab active" onclick="openTab(event,'comentarios')">Comentários</div>
-    <div class="tab" onclick="openTab(event,'paralelas')">Paralelas</div>
+    <div class="tab" onclick="openTab(event,'comentarios')">Comentários</div>
+    <div class="tab active" onclick="openTab(event,'paralelas')">Paralelas</div>
     <div class="tab" onclick="openTab(event,'os')">O.S.</div>
 </div>
 
-<!-- ABA COMENTÁRIOS -->
-<div id="comentarios" class="content active">
+<!-- COMENTÁRIOS (placeholder) -->
+<div id="comentarios" class="content">
+    <p>Comentários continuam como estão.</p>
+</div>
 
-    <label>Protocolo</label>
-    <input id="protocolo" onblur="autoPrefixo()">
+<!-- PARALELAS -->
+<div id="paralelas" class="content active">
 
-    <label>Matrícula</label>
-    <input id="matricula">
-
-    <label>Comentário</label>
-    <textarea id="comentario" rows="4"></textarea>
-
-    <div class="button-grid">
-        <button onclick="atalho('2ª FATURA AGORA - ENVIADA')">2ª via enviada</button>
-        <button onclick="atalho('VERIFICAÇÃO SITUAÇÃO ABASTECIMENTO - EXECUTADA')">Abastecimento</button>
-        <button onclick="atalho('INFORMA FALTA DE ÁGUA - ABERTURA DE SOLICITAÇÃO')">Falta de água</button>
-        <button onclick="servicoNaoPrestado('FORMS')">Serviço não prestado – Forms</button>
-        <button onclick="servicoNaoPrestado('SUPERVISORA')">Serviço não prestado – Supervisora</button>
+    <div class="grid">
+        <button onclick="abrirCancelamento()">Cancelamento de Solicitação</button>
+        <!-- próximas paralelas entram aqui -->
     </div>
 
-    <button class="btn-full" onclick="copiarComentario()">COPIAR COMENTÁRIO</button>
-    <button id="btnSalvar" class="btn-save" onclick="salvarComentario()">Salvar comentário</button>
 </div>
 
-<!-- ABA PARALELAS -->
-<div id="paralelas" class="content">
-    <p>Em construção.</p>
-</div>
-
-<!-- ABA OS -->
+<!-- OS -->
 <div id="os" class="content">
     <p>Em construção.</p>
 </div>
 
-<!-- CONFIGURAÇÕES -->
-<div id="config" class="modal">
+<!-- MODAL CANCELAMENTO -->
+<div id="modalCancelamento" class="modal">
     <div class="modal-content">
-        <h3>Configurações</h3>
 
-        <label class="config-option">
-            <input type="radio" name="origem" value="CALL CENTER">
-            Call Center
-        </label>
+        <h3>CANCELAMENTO DE SOLICITAÇÃO</h3>
 
-        <label class="config-option">
-            <input type="radio" name="origem" value="LOJA">
-            Loja
-        </label>
+        <label>Matrícula</label>
+        <input id="canMatricula">
 
-        <button class="btn-full" onclick="saveConfig()">Salvar</button>
+        <label>Cidade</label>
+        <input id="canCidade">
+
+        <label>Protocolo do atendimento</label>
+        <input id="canProtocolo">
+
+        <label>Serviço que o cliente solicita o cancelamento</label>
+        <input id="canServico">
+
+        <label>Nº solicitação</label>
+        <input id="canOS">
+
+        <label>Motivo do cancelamento</label>
+        <input id="canMotivo">
+
+        <label>Corpo do e-mail (opcional)</label>
+        <textarea id="canCorpo" rows="4"></textarea>
+
+        <button class="btn-full" onclick="copiarCancelamento()">COPIAR TEXTO</button>
+        <button class="btn-full" onclick="fecharModal()">FECHAR</button>
+
     </div>
 </div>
 
 <script>
-// ---------- ABAS ----------
+// --------- ABAS ----------
 function openTab(evt,id) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -201,86 +173,39 @@ function openTab(evt,id) {
     evt.target.classList.add('active');
 }
 
-// ---------- CONFIG ----------
-function getOrigem() {
-    return localStorage.getItem('origem') || 'CALL CENTER';
+// --------- MODAL ----------
+function abrirCancelamento() {
+    document.getElementById('modalCancelamento').style.display = 'block';
 }
 
-function openConfig() {
-    document.getElementById('config').style.display = 'block';
-    document.querySelectorAll('input[name="origem"]').forEach(r => {
-        r.checked = r.value === getOrigem();
-    });
+function fecharModal() {
+    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
 }
 
-function saveConfig() {
-    const sel = document.querySelector('input[name="origem"]:checked');
-    if (sel) localStorage.setItem('origem', sel.value);
-    document.getElementById('config').style.display = 'none';
-    atualizarBotaoSalvar();
-}
+// --------- CANCELAMENTO ----------
+function copiarCancelamento() {
 
-// ---------- PREFIXO ----------
-function autoPrefixo() {
-    const prot = document.getElementById('protocolo').value.trim();
-    const campo = document.getElementById('comentario');
+    const assinatura = `
+JÚLIA DA SILVEIRA FLORES
+(51) 92000-6065
+`;
 
-    if (!prot) return;
+    const texto =
+`CANCELAMENTO DE SOLICITAÇÃO
 
-    if (campo.value.trim() === '') {
-        campo.value = (getOrigem() + ' PROTOCOLO: ' + prot + ' - ').toUpperCase();
-    }
-}
+MATRÍCULA: ${canMatricula.value}
+CIDADE: ${canCidade.value}
+PROTOCOLO DO ATENDIMENTO: ${canProtocolo.value}
+SERVIÇO QUE O CLIENTE SOLICITA O CANCELAMENTO: ${canServico.value}
+Nº SOLICITAÇÃO: ${canOS.value}
+MOTIVO DO CANCELAMENTO: ${canMotivo.value}
 
-function basePrefixo() {
-    const prot = document.getElementById('protocolo').value.trim();
-    if (!prot) return '';
-    return getOrigem() + ' PROTOCOLO: ' + prot + ' - ';
-}
+${canCorpo.value}
+${assinatura}`.toUpperCase();
 
-// ---------- ATALHOS ----------
-function atalho(texto) {
-    const campo = document.getElementById('comentario');
-    let atual = campo.value.trim();
-
-    if (!atual.startsWith(getOrigem())) {
-        atual = basePrefixo();
-    }
-    campo.value = (atual + texto).toUpperCase();
-}
-
-function servicoNaoPrestado(destino) {
-    const tipo = prompt('Tipo de serviço:');
-    if (!tipo) return;
-    atalho('SERVIÇO SOLICITADO E NÃO PRESTADO - ' + tipo + ' - ENVIADO PARA ' + destino);
-}
-
-// ---------- AÇÕES ----------
-function copiarComentario() {
-    const texto = document.getElementById('comentario').value.trim();
-    if (!texto) return;
     navigator.clipboard.writeText(texto);
-    alert('Comentário copiado!');
+    alert('Texto copiado!');
 }
-
-function salvarComentario() {
-    if (getOrigem() !== 'CALL CENTER') return;
-    const texto = document.getElementById('comentario').value.trim();
-    if (!texto) return;
-
-    const lista = JSON.parse(localStorage.getItem('comentariosSalvos') || '[]');
-    lista.push(texto);
-    localStorage.setItem('comentariosSalvos', JSON.stringify(lista));
-    alert('Comentário salvo!');
-}
-
-function atualizarBotaoSalvar() {
-    document.getElementById('btnSalvar').style.display =
-        getOrigem() === 'CALL CENTER' ? 'block' : 'none';
-}
-
-// ---------- INIT ----------
-atualizarBotaoSalvar();
 </script>
 
 </body>
