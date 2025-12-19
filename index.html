@@ -5,101 +5,28 @@
 <title>Central de Atendimento</title>
 
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background: #f4f4f4;
-}
+body { font-family: Arial, sans-serif; margin:0; background:#f4f4f4; }
+header { background:#2f3e46; color:#fff; padding:14px; text-align:center; font-weight:bold; }
+.tabs { display:flex; background:#cad2c5; }
+.tab { padding:10px 16px; cursor:pointer; border-right:1px solid #999; }
+.tab.active { background:#fff; font-weight:bold; }
+.content { display:none; padding:16px; background:#fff; height:calc(100vh - 90px); overflow-y:auto; }
+.content.active { display:block; }
+.grid { display:grid; grid-template-columns:1fr; gap:10px; }
+button { padding:12px; cursor:pointer; font-size:14px; }
 
-header {
-    background: #2f3e46;
-    color: #fff;
-    padding: 14px;
-    text-align: center;
-    font-weight: bold;
-}
-
-.tabs {
-    display: flex;
-    background: #cad2c5;
-}
-
-.tab {
-    padding: 10px 16px;
-    cursor: pointer;
-    border-right: 1px solid #999;
-}
-
-.tab.active {
-    background: #fff;
-    font-weight: bold;
-}
-
-.content {
-    display: none;
-    padding: 16px;
-    background: #fff;
-    height: calc(100vh - 90px);
-    overflow-y: auto;
-}
-
-.content.active {
-    display: block;
-}
-
-button {
-    padding: 12px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-}
-
-/* MODAL */
-.modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 10;
-}
-
+.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:10; }
 .modal-content {
-    background: #fff;
-    padding: 20px;
-    width: 420px;
-    max-height: 80vh;
-    overflow-y: auto;
-    margin: 60px auto;
+    background:#fff; padding:20px; width:420px;
+    max-height:80vh; overflow-y:auto; margin:60px auto;
 }
-
-label {
-    font-weight: bold;
-    display: block;
-    margin-top: 10px;
-}
-
-input, textarea {
-    width: 100%;
-    padding: 7px;
-    margin-top: 4px;
-}
-
-textarea {
-    resize: vertical;
-}
+label { font-weight:bold; display:block; margin-top:10px; }
+input, textarea { width:100%; padding:7px; margin-top:4px; }
+textarea { resize:vertical; }
 
 .btn-full {
-    width: 100%;
-    margin-top: 14px;
-    background: #2f3e46;
-    color: #fff;
-    border: none;
-    font-weight: bold;
+    width:100%; margin-top:14px;
+    background:#2f3e46; color:#fff; border:none; font-weight:bold;
 }
 </style>
 </head>
@@ -109,103 +36,118 @@ textarea {
 <header>CENTRAL DE ATENDIMENTO</header>
 
 <div class="tabs">
-    <div class="tab" onclick="openTab(event,'comentarios')">Comentários</div>
-    <div class="tab active" onclick="openTab(event,'paralelas')">Paralelas</div>
-    <div class="tab" onclick="openTab(event,'os')">O.S.</div>
-</div>
-
-<div id="comentarios" class="content">
-    <p>Comentários seguem no módulo próprio.</p>
+  <div class="tab active" onclick="openTab(event,'paralelas')">Paralelas</div>
 </div>
 
 <div id="paralelas" class="content active">
-    <div class="grid">
-        <button onclick="abrirParalela('caminhao')">Caminhão-pipa</button>
-        <button disabled>Cancelamento (em breve)</button>
-        <button disabled>Retificação (em breve)</button>
-    </div>
+  <div class="grid">
+    <button onclick="abrir('cancelamento')">Cancelamento de Solicitação</button>
+    <button onclick="abrir('pipa')">Caminhão-pipa</button>
+    <button onclick="abrir('retificacao')">Retificação de Fatura</button>
+    <button onclick="abrir('debito')">Retirar Débito Automático</button>
+    <button onclick="abrir('exclusao')">Exclusão Cadastro Site/App</button>
+    <button onclick="abrir('religacao')">Religação por Corte Indevido</button>
+  </div>
 </div>
 
-<div id="os" class="content">
-    <p>Em construção.</p>
-</div>
+<!-- ================= MODAIS ================= -->
 
-<!-- MODAL -->
-<div id="modalParalela" class="modal">
-    <div class="modal-content">
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h3 id="titulo"></h3>
+    <div id="campos"></div>
 
-        <h3 id="titulo"></h3>
+    <label>Corpo do e-mail (opcional)</label>
+    <textarea id="corpo" rows="4"></textarea>
 
-        <div id="campos"></div>
-
-        <label>Corpo do e-mail (opcional)</label>
-        <textarea id="corpo" rows="4"></textarea>
-
-        <button class="btn-full" onclick="copiar()">COPIAR TEXTO</button>
-        <button class="btn-full" onclick="fechar()">FECHAR</button>
-
-    </div>
+    <button class="btn-full" onclick="copiar()">COPIAR TEXTO</button>
+    <button class="btn-full" onclick="fechar()">FECHAR</button>
+  </div>
 </div>
 
 <script>
+const assinatura = "JÚLIA DA SILVEIRA FLORES\n(51) 92000-6065";
+
 const paralelas = {
-    caminhao: {
-        titulo: "CAMINHÃO PIPA",
-        campos: [
-            "PROTOCOLO DO ATENDIMENTO",
-            "BAIRRO",
-            "CIDADE",
-            "MATRÍCULA",
-            "ENDEREÇO",
-            "CELULAR PARA CONTATO"
-        ]
-    }
+  cancelamento: {
+    titulo: "CANCELAMENTO DE SOLICITAÇÃO",
+    campos: [
+      "MATRÍCULA","CIDADE","PROTOCOLO DO ATENDIMENTO",
+      "SERVIÇO QUE O CLIENTE SOLICITA O CANCELAMENTO",
+      "Nº SOLICITAÇÃO","MOTIVO DO CANCELAMENTO"
+    ]
+  },
+  pipa: {
+    titulo: "CAMINHÃO PIPA",
+    campos: [
+      "PROTOCOLO DO ATENDIMENTO","BAIRRO","CIDADE",
+      "MATRÍCULA","ENDEREÇO","CELULAR PARA CONTATO"
+    ]
+  },
+  retificacao: {
+    titulo: "RELACIONADO A FATURA",
+    campos: [
+      "COMPETÊNCIA","DATA DA SOLICITAÇÃO",
+      "MATRÍCULA","CIDADE","PROTOCOLO DO ATENDIMENTO"
+    ]
+  },
+  debito: {
+    titulo: "RETIRAR DÉBITO AUTOMÁTICO",
+    campos: [
+      "MATRÍCULA","CIDADE","PROTOCOLO DO ATENDIMENTO",
+      "VENCIMENTO","VALOR","COMPETÊNCIA"
+    ]
+  },
+  exclusao: {
+    titulo: "EXCLUSÃO DE CADASTRO DO SITE/APP",
+    campos: [
+      "NOME COMPLETO","MATRÍCULA","CPF/CNPJ CADASTRADO",
+      "EMAIL CADASTRADO","CPF/CNPJ CORRETO","MOTIVO"
+    ]
+  },
+  religacao: {
+    titulo: "RELIGAÇÃO POR CORTE INDEVIDO",
+    campos: [
+      "O.S.","MATRÍCULA","CIDADE",
+      "PROTOCOLO DO ATENDIMENTO","VENCIMENTO"
+    ]
+  }
 };
 
 let atual = null;
 
-function openTab(evt,id) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    evt.target.classList.add('active');
+function openTab(e,id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
 }
 
-function abrirParalela(tipo) {
-    atual = paralelas[tipo];
-    document.getElementById('titulo').innerText = atual.titulo;
-
-    const area = document.getElementById('campos');
-    area.innerHTML = "";
-
-    atual.campos.forEach(c => {
-        area.innerHTML += `
-            <label>${c}</label>
-            <input data-label="${c}">
-        `;
-    });
-
-    document.getElementById('modalParalela').style.display = 'block';
-    document.body.style.overflow = 'hidden';
+function abrir(tipo){
+  atual = paralelas[tipo];
+  document.getElementById('titulo').innerText = atual.titulo;
+  const area = document.getElementById('campos');
+  area.innerHTML = "";
+  atual.campos.forEach(c=>{
+    area.innerHTML += `<label>${c}</label><input data-label="${c}">`;
+  });
+  document.getElementById('modal').style.display='block';
+  document.body.style.overflow='hidden';
 }
 
-function fechar() {
-    document.getElementById('modalParalela').style.display = 'none';
-    document.body.style.overflow = 'auto';
+function fechar(){
+  document.getElementById('modal').style.display='none';
+  document.body.style.overflow='auto';
 }
 
-function copiar() {
-    let texto = atual.titulo + "\n\n";
-
-    document.querySelectorAll('#campos input').forEach(i => {
-        texto += i.dataset.label + ": " + i.value.toUpperCase() + "\n";
-    });
-
-    texto += "\n" + document.getElementById('corpo').value + "\n\n";
-    texto += "JÚLIA DA SILVEIRA FLORES\n(51) 92000-6065";
-
-    navigator.clipboard.writeText(texto);
-    alert("Texto copiado!");
+function copiar(){
+  let txt = atual.titulo + "\n\n";
+  document.querySelectorAll('#campos input').forEach(i=>{
+    txt += i.dataset.label + ": " + i.value.toUpperCase() + "\n";
+  });
+  txt += "\n" + corpo.value + "\n\n" + assinatura;
+  navigator.clipboard.writeText(txt);
+  alert("Texto copiado!");
 }
 </script>
 
