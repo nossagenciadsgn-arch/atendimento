@@ -17,16 +17,17 @@ button { padding:12px; cursor:pointer; font-size:14px; }
 
 .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:10; }
 .modal-content {
-    background:#fff; padding:20px; width:420px;
-    max-height:80vh; overflow-y:auto; margin:60px auto;
+  background:#fff; padding:20px; width:440px;
+  max-height:80vh; overflow-y:auto; margin:60px auto;
 }
+
 label { font-weight:bold; display:block; margin-top:10px; }
 input, textarea { width:100%; padding:7px; margin-top:4px; }
 textarea { resize:vertical; }
 
 .btn-full {
-    width:100%; margin-top:14px;
-    background:#2f3e46; color:#fff; border:none; font-weight:bold;
+  width:100%; margin-top:14px;
+  background:#2f3e46; color:#fff; border:none; font-weight:bold;
 }
 </style>
 </head>
@@ -36,21 +37,17 @@ textarea { resize:vertical; }
 <header>CENTRAL DE ATENDIMENTO</header>
 
 <div class="tabs">
-  <div class="tab active" onclick="openTab(event,'paralelas')">Paralelas</div>
+  <div class="tab active">Paralelas</div>
 </div>
 
-<div id="paralelas" class="content active">
+<div class="content active">
   <div class="grid">
-    <button onclick="abrir('cancelamento')">Cancelamento de Solicitação</button>
-    <button onclick="abrir('pipa')">Caminhão-pipa</button>
-    <button onclick="abrir('retificacao')">Retificação de Fatura</button>
-    <button onclick="abrir('debito')">Retirar Débito Automático</button>
-    <button onclick="abrir('exclusao')">Exclusão Cadastro Site/App</button>
-    <button onclick="abrir('religacao')">Religação por Corte Indevido</button>
+    <button onclick="abrir('retificacao')">Serviço fora do prazo</button>
+    <button onclick="abrir('debito')">Bloquear débito em conta</button>
+    <button onclick="abrir('exclusao')">Exclusão cadastro Site/App</button>
+    <button onclick="abrir('religacao')">Religação por corte indevido</button>
   </div>
 </div>
-
-<!-- ================= MODAIS ================= -->
 
 <div id="modal" class="modal">
   <div class="modal-content">
@@ -68,85 +65,141 @@ textarea { resize:vertical; }
 <script>
 const assinatura = "JÚLIA DA SILVEIRA FLORES\n(51) 92000-6065";
 
-const paralelas = {
-  cancelamento: {
-    titulo: "CANCELAMENTO DE SOLICITAÇÃO",
-    campos: [
-      "MATRÍCULA","CIDADE","PROTOCOLO DO ATENDIMENTO",
-      "SERVIÇO QUE O CLIENTE SOLICITA O CANCELAMENTO",
-      "Nº SOLICITAÇÃO","MOTIVO DO CANCELAMENTO"
-    ]
-  },
-  pipa: {
-    titulo: "CAMINHÃO PIPA",
-    campos: [
-      "PROTOCOLO DO ATENDIMENTO","BAIRRO","CIDADE",
-      "MATRÍCULA","ENDEREÇO","CELULAR PARA CONTATO"
-    ]
-  },
+const modelos = {
+
   retificacao: {
-    titulo: "RELACIONADO A FATURA",
+    titulo: "SERVIÇO FORA DO PRAZO",
     campos: [
-      "COMPETÊNCIA","DATA DA SOLICITAÇÃO",
-      "MATRÍCULA","CIDADE","PROTOCOLO DO ATENDIMENTO"
-    ]
+      { id:"servico", label:"Serviço" },
+      { id:"competencia", label:"Competência", placeholder:"MM/AAAA" },
+      { id:"data", label:"Data da solicitação", placeholder:"DD/MM/AAAA" },
+      { id:"matricula", label:"Matrícula" },
+      { id:"cidade", label:"Cidade" },
+      { id:"protocolo", label:"Protocolo do atendimento" }
+    ],
+    gerar(d) {
+      return {
+        assunto: `${d.servico} FORA DO PRAZO`,
+        corpo:
+`${d.servico} fora do prazo, referente a competência: ${d.competencia}.
+Data da solicitação: ${d.data}
+Matrícula: ${d.matricula}
+Cidade: ${d.cidade}
+Protocolo do atendimento: ${d.protocolo}`
+      }
+    }
   },
+
   debito: {
-    titulo: "RETIRAR DÉBITO AUTOMÁTICO",
+    titulo: "BLOQUEAR DÉBITO EM CONTA",
     campos: [
-      "MATRÍCULA","CIDADE","PROTOCOLO DO ATENDIMENTO",
-      "VENCIMENTO","VALOR","COMPETÊNCIA"
-    ]
+      { id:"matricula", label:"Matrícula" },
+      { id:"cidade", label:"Cidade" },
+      { id:"protocolo", label:"Protocolo do atendimento" },
+      { id:"vencimento", label:"Vencimento", placeholder:"DD/MM/AAAA" },
+      { id:"valor", label:"Valor", value:"R$ " },
+      { id:"competencia", label:"Competência", placeholder:"MM/AAAA" }
+    ],
+    gerar(d) {
+      return {
+        assunto: "BLOQUEAR DÉBITO EM CONTA",
+        corpo:
+`Matrícula: ${d.matricula}
+Cidade: ${d.cidade}
+Protocolo do atendimento: ${d.protocolo}
+Vencimento: ${d.vencimento}
+Valor: ${d.valor}
+Competência: ${d.competencia}`
+      }
+    }
   },
+
   exclusao: {
-    titulo: "EXCLUSÃO DE CADASTRO DO SITE/APP",
+    titulo: "EXCLUSÃO DE CADASTRO DO SITE/APP.",
     campos: [
-      "NOME COMPLETO","MATRÍCULA","CPF/CNPJ CADASTRADO",
-      "EMAIL CADASTRADO","CPF/CNPJ CORRETO","MOTIVO"
-    ]
+      { id:"nome", label:"Nome completo" },
+      { id:"matricula", label:"Matrícula" },
+      { id:"cpfCad", label:"CPF/CNPJ cadastrado" },
+      { id:"emailCad", label:"E-mail cadastrado" },
+      { id:"cpfCor", label:"CPF/CNPJ correto" }
+    ],
+    gerar(d) {
+      return {
+        assunto: "EXCLUSÃO DE CADASTRO DO SITE/APP.",
+        corpo:
+`Nome completo: ${d.nome}
+Matrícula: ${d.matricula}
+Concessão: Corsan
+CPF ou CNPJ cadastrado pelo cliente no site/App: ${d.cpfCad}
+E-mail cadastrado pelo cliente no site/App: ${d.emailCad}
+CPF ou CNPJ correto: ${d.cpfCor}
+Motivo da solicitação de exclusão: Dados incorretos`
+      }
+    }
   },
+
   religacao: {
     titulo: "RELIGAÇÃO POR CORTE INDEVIDO",
     campos: [
-      "O.S.","MATRÍCULA","CIDADE",
-      "PROTOCOLO DO ATENDIMENTO","VENCIMENTO"
-    ]
+      { id:"os", label:"Número da O.S." },
+      { id:"protocolo", label:"Protocolo" },
+      { id:"matricula", label:"Matrícula" },
+      { id:"cidade", label:"Cidade" },
+      { id:"vencimento", label:"Vencimento", placeholder:"DD/MM/AAAA" }
+    ],
+    gerar(d) {
+      return {
+        assunto: `RELIGAÇÃO POR CORTE INDEVIDO – REGIONAL – O.S. ${d.os} – PROTOCOLO: ${d.protocolo}`,
+        corpo:
+`Matrícula: ${d.matricula}
+Cidade: ${d.cidade}
+Vencimento: ${d.vencimento}`
+      }
+    }
   }
+
 };
 
 let atual = null;
 
-function openTab(e,id){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
-  e.target.classList.add('active');
-  document.getElementById(id).classList.add('active');
-}
+function abrir(tipo) {
+  atual = modelos[tipo];
+  titulo.innerText = atual.titulo;
+  campos.innerHTML = "";
 
-function abrir(tipo){
-  atual = paralelas[tipo];
-  document.getElementById('titulo').innerText = atual.titulo;
-  const area = document.getElementById('campos');
-  area.innerHTML = "";
-  atual.campos.forEach(c=>{
-    area.innerHTML += `<label>${c}</label><input data-label="${c}">`;
+  atual.campos.forEach(c => {
+    campos.innerHTML += `
+      <label>${c.label}</label>
+      <input id="${c.id}" placeholder="${c.placeholder||""}" value="${c.value||""}">
+    `;
   });
-  document.getElementById('modal').style.display='block';
-  document.body.style.overflow='hidden';
+
+  modal.style.display = "block";
+  document.body.style.overflow = "hidden";
 }
 
-function fechar(){
-  document.getElementById('modal').style.display='none';
-  document.body.style.overflow='auto';
+function fechar() {
+  modal.style.display = "none";
+  document.body.style.overflow = "auto";
 }
 
-function copiar(){
-  let txt = atual.titulo + "\n\n";
-  document.querySelectorAll('#campos input').forEach(i=>{
-    txt += i.dataset.label + ": " + i.value.toUpperCase() + "\n";
+function copiar() {
+  let dados = {};
+  atual.campos.forEach(c => {
+    dados[c.id] = document.getElementById(c.id).value.toUpperCase();
   });
-  txt += "\n" + corpo.value + "\n\n" + assinatura;
-  navigator.clipboard.writeText(txt);
+
+  const r = atual.gerar(dados);
+  const texto =
+`ASSUNTO: ${r.assunto}
+
+${r.corpo}
+
+${corpo.value}
+
+${assinatura}`;
+
+  navigator.clipboard.writeText(texto);
   alert("Texto copiado!");
 }
 </script>
