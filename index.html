@@ -5,58 +5,75 @@
 <title>Central de Atendimento</title>
 
 <style>
-body { font-family: Arial, sans-serif; margin:0; background:#f4f4f4; }
-header { background:#2f3e46; color:#fff; padding:14px; text-align:center; font-weight:bold; }
-
-.tabs { display:flex; background:#cad2c5; }
-.tab { padding:10px 16px; cursor:pointer; border-right:1px solid #999; }
-.tab.active { background:#fff; font-weight:bold; }
-
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f4f4f4;
+}
+header {
+  background: #2f3e46;
+  color: #fff;
+  padding: 14px;
+  text-align: center;
+  font-weight: bold;
+}
+.tabs {
+  display: flex;
+  background: #cad2c5;
+}
+.tab {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-right: 1px solid #999;
+}
+.tab.active {
+  background: #fff;
+  font-weight: bold;
+}
 .content {
-  display:none;
-  padding:16px;
-  background:#fff;
-  height:calc(100vh - 90px);
-  overflow-y:auto;
+  display: none;
+  padding: 16px;
+  background: #fff;
+  height: calc(100vh - 90px);
+  overflow-y: auto;
 }
-.content.active { display:block; }
-
-label { font-weight:bold; display:block; margin-top:10px; }
-input, textarea {
-  width:100%; padding:8px; margin-top:4px; box-sizing:border-box;
+.content.active {
+  display: block;
 }
-textarea { resize:vertical; }
-
-button { padding:8px; cursor:pointer; }
-
+label {
+  font-weight: bold;
+  display: block;
+  margin-top: 10px;
+}
+input, textarea, select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  box-sizing: border-box;
+}
+textarea {
+  resize: vertical;
+}
+button {
+  padding: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}
 .btn-full {
-  width:100%;
-  margin-top:12px;
-  background:#2f3e46;
-  color:#fff;
-  border:none;
-  font-weight:bold;
+  width: 100%;
+  background: #2f3e46;
+  color: #fff;
+  border: none;
+  font-weight: bold;
 }
-
-.os-layout {
-  display:grid;
-  grid-template-columns:220px 1fr;
-  gap:16px;
+.box {
+  background: #eee;
+  padding: 10px;
+  margin-top: 10px;
 }
-
-.os-list button {
-  width:100%;
-  margin-bottom:6px;
+hr {
+  margin: 20px 0;
 }
-
-.orientacoes {
-  background:#eee;
-  padding:10px;
-  font-size:13px;
-  margin-bottom:10px;
-}
-
-.hidden { display:none; }
 </style>
 </head>
 
@@ -66,17 +83,21 @@ button { padding:8px; cursor:pointer; }
 
 <div class="tabs">
   <div class="tab active" onclick="openTab(event,'comentarios')">Comentários</div>
-  <div class="tab" onclick="openTab(event,'pendencias')">Pendências</div>
+  <div class="tab" onclick="openTab(event,'paralelas')">Paralelas</div>
   <div class="tab" onclick="openTab(event,'os')">O.S.</div>
 </div>
 
 <!-- ================= COMENTÁRIOS ================= -->
 <div id="comentarios" class="content active">
-  <label>Matrícula</label>
-  <input id="matricula">
+
+  <label>Canal</label>
+  <select id="canal">
+    <option value="CALL CENTER">CALL CENTER</option>
+    <option value="LOJA">LOJA</option>
+  </select>
 
   <label>Protocolo</label>
-  <input id="protocolo" oninput="gerarInicio()">
+  <input id="protocolo" oninput="gerarComentario()">
 
   <label>Comentário</label>
   <textarea id="comentario" rows="4"></textarea>
@@ -84,151 +105,150 @@ button { padding:8px; cursor:pointer; }
   <button class="btn-full" onclick="copiarComentario()">COPIAR COMENTÁRIO</button>
 </div>
 
-<!-- ================= PENDÊNCIAS ================= -->
-<div id="pendencias" class="content">
-  <p>Pendências continuam funcionando normalmente.</p>
+<!-- ================= PARALELAS ================= -->
+<div id="paralelas" class="content">
+
+  <div class="box">
+    <b>E-mails Supervisores</b><br>
+    kleber.filho@aeparceiros.com.br<br>
+    victoria.ferreira@aeparceiros.com.br<br>
+    barbara.piva@aeparceiros.com.br
+  </div>
+
+  <hr>
+
+  <label>Tipo de solicitação</label>
+  <select id="paralela_tipo" onchange="gerarParalela()">
+    <option value="">Selecione</option>
+    <option value="CANCELAMENTO DE SOLICITAÇÃO">Cancelamento de solicitação</option>
+    <option value="CAMINHÃO PIPA">Caminhão pipa</option>
+    <option value="RETIFICAÇÃO FORA DO PRAZO">Retificação fora do prazo</option>
+    <option value="BLOQUEAR DÉBITO EM CONTA">Bloquear débito em conta</option>
+    <option value="EXCLUSÃO DE CADASTRO DO SITE/APP">Exclusão cadastro site/app</option>
+    <option value="RELIGAÇÃO POR CORTE INDEVIDO">Religação por corte indevido</option>
+  </select>
+
+  <label>Texto do e-mail</label>
+  <textarea id="paralela_texto" rows="10"></textarea>
+
+  <button class="btn-full" onclick="copiarParalela()">COPIAR E-MAIL</button>
 </div>
 
 <!-- ================= O.S. ================= -->
 <div id="os" class="content">
 
-  <div class="os-layout">
+  <label>Tipo de O.S.</label>
+  <select id="os_tipo" onchange="carregarOS()">
+    <option value="">Selecione</option>
+    <option value="troca_mov">Troca de titularidade com movimentação</option>
+  </select>
 
-    <!-- LISTA DE OS -->
-    <div class="os-list">
-      <button onclick="selecionarOS('religacao')">Religação por corte indevido</button>
-      <button onclick="selecionarOS('pipa')">Caminhão pipa</button>
-      <button onclick="selecionarOS('faltaagua')">Falta de água</button>
-      <button onclick="selecionarOS('retificacao')">Retificação de fatura</button>
-    </div>
+  <hr>
 
-    <!-- CONTEÚDO -->
-    <div>
+  <label>Nome do cliente</label>
+  <input id="os_nome">
 
-      <div id="orientacoes" class="orientacoes hidden"></div>
+  <label>Celular</label>
+  <input id="os_celular">
 
-      <label>Nome do cliente</label>
-      <input id="os_nome">
+  <div id="os_campos"></div>
 
-      <label>Celular</label>
-      <input id="os_celular">
+  <label>Texto da O.S.</label>
+  <textarea id="os_texto" rows="10"></textarea>
 
-      <div id="camposOS"></div>
-
-      <label>Texto da O.S.</label>
-      <textarea id="os_texto" rows="8"></textarea>
-
-      <button class="btn-full" onclick="copiarOSTexto()">COPIAR TEXTO DA O.S.</button>
-    </div>
-
-  </div>
-
+  <button class="btn-full" onclick="copiarOS()">COPIAR O.S.</button>
 </div>
 
 <script>
-function openTab(evt,id){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+function openTab(evt, id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
   evt.target.classList.add('active');
   document.getElementById(id).classList.add('active');
 }
 
-/* ---------------- O.S. DATA ---------------- */
-
-const OS = {
-  religacao: {
-    nome: "RELIGAÇÃO POR CORTE INDEVIDO",
-    orientacoes: [
-      "Conferir vencimento",
-      "Validar protocolo",
-      "Confirmar corte indevido"
-    ],
-    campos: ["MATRÍCULA", "CIDADE", "PROTOCOLO", "VENCIMENTO"]
-  },
-  pipa: {
-    nome: "CAMINHÃO PIPA",
-    orientacoes: null,
-    campos: ["MATRÍCULA", "ENDEREÇO", "BAIRRO", "CIDADE", "PROTOCOLO"]
-  },
-  faltaagua: {
-    nome: "FALTA DE ÁGUA",
-    orientacoes: null,
-    campos: ["MATRÍCULA", "CIDADE", "PROTOCOLO"]
-  },
-  retificacao: {
-    nome: "RETIFICAÇÃO DE FATURA",
-    orientacoes: null,
-    campos: ["MATRÍCULA", "CIDADE", "PROTOCOLO", "COMPETÊNCIA", "DATA DA SOLICITAÇÃO"]
-  }
-};
-
-let osAtual = null;
-
-function selecionarOS(key){
-  osAtual = OS[key];
-
-  const orient = document.getElementById("orientacoes");
-  orient.innerHTML = "";
-  if (osAtual.orientacoes) {
-    orient.classList.remove("hidden");
-    orient.innerHTML = "<b>Orientações</b><ul>" +
-      osAtual.orientacoes.map(o=>"<li>"+o+"</li>").join("") +
-      "</ul>";
-  } else {
-    orient.classList.add("hidden");
-  }
-
-  const camposDiv = document.getElementById("camposOS");
-  camposDiv.innerHTML = "";
-  osAtual.campos.forEach(c=>{
-    camposDiv.innerHTML += `
-      <label>${c}</label>
-      <input data-campo="${c}">
-    `;
-  });
-
-  atualizarTextoOS();
+/* COMENTÁRIOS */
+function gerarComentario() {
+  const canal = document.getElementById("canal").value;
+  const protocolo = document.getElementById("protocolo").value.trim();
+  if (!protocolo) return;
+  document.getElementById("comentario").value =
+    `${canal} PROTOCOLO: ${protocolo} - `;
 }
 
-document.addEventListener("input", e=>{
-  if (e.target.closest("#os")) atualizarTextoOS();
+function copiarComentario() {
+  navigator.clipboard.writeText(
+    document.getElementById("comentario").value.toUpperCase()
+  );
+  alert("Comentário copiado");
+}
+
+/* PARALELAS */
+function gerarParalela() {
+  const tipo = document.getElementById("paralela_tipo").value;
+  if (!tipo) return;
+
+  let texto = tipo + "\n\n";
+  texto += "MATRÍCULA:\n";
+  texto += "CIDADE:\n";
+  texto += "PROTOCOLO DO ATENDIMENTO:\n\n";
+  texto += "ATENCIOSAMENTE,\nCALL CENTER";
+
+  document.getElementById("paralela_texto").value = texto.toUpperCase();
+}
+
+function copiarParalela() {
+  navigator.clipboard.writeText(
+    document.getElementById("paralela_texto").value
+  );
+  alert("E-mail copiado");
+}
+
+/* O.S. */
+function carregarOS() {
+  const tipo = document.getElementById("os_tipo").value;
+  const campos = document.getElementById("os_campos");
+  campos.innerHTML = "";
+
+  if (tipo === "troca_mov") {
+    [
+      "MATRÍCULA",
+      "ENDEREÇO",
+      "CIDADE",
+      "NOVO TITULAR",
+      "CPF DO NOVO TITULAR",
+      "DATA DA MOVIMENTAÇÃO",
+      "LEITURA DO HIDRÔMETRO",
+      "OBSERVAÇÕES"
+    ].forEach(c => {
+      campos.innerHTML += `<label>${c}</label><input data-os="${c}">`;
+    });
+  }
+
+  atualizarOSTexto();
+}
+
+document.addEventListener("input", e => {
+  if (e.target.closest("#os")) atualizarOSTexto();
 });
 
-function atualizarTextoOS(){
-  if (!osAtual) return;
-
-  let texto = osAtual.nome + "\n\n";
+function atualizarOSTexto() {
+  let texto = "TROCA DE TITULARIDADE COM MOVIMENTAÇÃO\n\n";
   texto += "NOME DO CLIENTE: " + document.getElementById("os_nome").value + "\n";
-  texto += "CELULAR: " + document.getElementById("os_celular").value + "\n";
+  texto += "CELULAR: " + document.getElementById("os_celular").value + "\n\n";
 
-  document.querySelectorAll("#camposOS input").forEach(inp=>{
-    texto += inp.dataset.campo + ": " + inp.value + "\n";
+  document.querySelectorAll("#os_campos input").forEach(i => {
+    texto += i.dataset.os + ": " + i.value + "\n";
   });
 
   document.getElementById("os_texto").value = texto.toUpperCase();
 }
 
-function copiarOSTexto(){
+function copiarOS() {
   navigator.clipboard.writeText(
     document.getElementById("os_texto").value
   );
-  alert("Texto da O.S. copiado!");
-}
-
-/* ---------------- COMENTÁRIOS (mantido) ---------------- */
-
-function gerarInicio(){
-  const p = document.getElementById("protocolo").value.trim();
-  if (!p) return;
-  document.getElementById("comentario").value =
-    "CALL CENTER PROTOCOLO: " + p + " - ";
-}
-
-function copiarComentario(){
-  navigator.clipboard.writeText(
-    document.getElementById("comentario").value.toUpperCase()
-  );
-  alert("Comentário copiado!");
+  alert("O.S. copiada");
 }
 </script>
 
