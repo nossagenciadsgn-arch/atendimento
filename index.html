@@ -7,27 +7,50 @@
 <style>
 body { font-family: Arial, sans-serif; margin:0; background:#f4f4f4; }
 header { background:#2f3e46; color:#fff; padding:14px; text-align:center; font-weight:bold; }
+
 .tabs { display:flex; background:#cad2c5; }
 .tab { padding:10px 16px; cursor:pointer; border-right:1px solid #999; }
 .tab.active { background:#fff; font-weight:bold; }
-.content { display:none; padding:16px; background:#fff; height:calc(100vh - 90px); overflow-y:auto; }
-.content.active { display:block; }
-.grid { display:grid; grid-template-columns:1fr; gap:10px; }
-button { padding:12px; cursor:pointer; font-size:14px; }
 
-.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:10; }
-.modal-content {
-  background:#fff; padding:20px; width:440px;
-  max-height:80vh; overflow-y:auto; margin:60px auto;
+.content {
+  display:none;
+  padding:16px;
+  background:#fff;
+  height:calc(100vh - 90px);
+  overflow-y:auto;
+}
+.content.active { display:block; }
+
+.grid { display:grid; grid-template-columns:1fr; gap:10px; }
+
+button {
+  padding:12px;
+  cursor:pointer;
+  font-size:14px;
 }
 
-label { font-weight:bold; display:block; margin-top:10px; }
-input, textarea { width:100%; padding:7px; margin-top:4px; }
+label {
+  font-weight:bold;
+  display:block;
+  margin-top:10px;
+}
+
+input, textarea {
+  width:100%;
+  padding:8px;
+  margin-top:4px;
+  box-sizing:border-box;
+}
+
 textarea { resize:vertical; }
 
 .btn-full {
-  width:100%; margin-top:14px;
-  background:#2f3e46; color:#fff; border:none; font-weight:bold;
+  width:100%;
+  margin-top:14px;
+  background:#2f3e46;
+  color:#fff;
+  border:none;
+  font-weight:bold;
 }
 </style>
 </head>
@@ -37,170 +60,71 @@ textarea { resize:vertical; }
 <header>CENTRAL DE ATENDIMENTO</header>
 
 <div class="tabs">
-  <div class="tab active">Paralelas</div>
+  <div class="tab active" onclick="openTab(event,'comentarios')">Comentários</div>
+  <div class="tab" onclick="openTab(event,'paralelas')">Paralelas</div>
 </div>
 
-<div class="content active">
+<!-- ================= COMENTÁRIOS ================= -->
+<div id="comentarios" class="content active">
+
+  <label>Tipo de atendimento</label>
+  <select id="tipo" onchange="atualizarPrefixo()">
+    <option value="CALL CENTER">Call Center</option>
+    <option value="LOJA">Loja</option>
+  </select>
+
+  <label>Protocolo</label>
+  <input id="protocolo" placeholder="Digite o protocolo" oninput="gerarInicio()">
+
+  <label>Comentário</label>
+  <textarea id="comentario" rows="4"
+    placeholder="Digite ou complete o comentário"></textarea>
+
+  <button class="btn-full" onclick="copiarComentario()">COPIAR COMENTÁRIO</button>
+
+</div>
+
+<!-- ================= PARALELAS ================= -->
+<div id="paralelas" class="content">
   <div class="grid">
-    <button onclick="abrir('retificacao')">Serviço fora do prazo</button>
-    <button onclick="abrir('debito')">Bloquear débito em conta</button>
-    <button onclick="abrir('exclusao')">Exclusão cadastro Site/App</button>
-    <button onclick="abrir('religacao')">Religação por corte indevido</button>
-  </div>
-</div>
-
-<div id="modal" class="modal">
-  <div class="modal-content">
-    <h3 id="titulo"></h3>
-    <div id="campos"></div>
-
-    <label>Corpo do e-mail (opcional)</label>
-    <textarea id="corpo" rows="4"></textarea>
-
-    <button class="btn-full" onclick="copiar()">COPIAR TEXTO</button>
-    <button class="btn-full" onclick="fechar()">FECHAR</button>
+    <button onclick="alert('Paralelas continuam funcionando aqui')">
+      Paralelas já configuradas
+    </button>
   </div>
 </div>
 
 <script>
-const assinatura = "JÚLIA DA SILVEIRA FLORES\n(51) 92000-6065";
+function openTab(evt,id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  evt.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
 
-const modelos = {
+function atualizarPrefixo() {
+  gerarInicio();
+}
 
-  retificacao: {
-    titulo: "SERVIÇO FORA DO PRAZO",
-    campos: [
-      { id:"servico", label:"Serviço" },
-      { id:"competencia", label:"Competência", placeholder:"MM/AAAA" },
-      { id:"data", label:"Data da solicitação", placeholder:"DD/MM/AAAA" },
-      { id:"matricula", label:"Matrícula" },
-      { id:"cidade", label:"Cidade" },
-      { id:"protocolo", label:"Protocolo do atendimento" }
-    ],
-    gerar(d) {
-      return {
-        assunto: `${d.servico} FORA DO PRAZO`,
-        corpo:
-`${d.servico} fora do prazo, referente a competência: ${d.competencia}.
-Data da solicitação: ${d.data}
-Matrícula: ${d.matricula}
-Cidade: ${d.cidade}
-Protocolo do atendimento: ${d.protocolo}`
-      }
-    }
-  },
+function gerarInicio() {
+  const tipo = document.getElementById('tipo').value;
+  const protocolo = document.getElementById('protocolo').value.trim();
+  if (!protocolo) return;
 
-  debito: {
-    titulo: "BLOQUEAR DÉBITO EM CONTA",
-    campos: [
-      { id:"matricula", label:"Matrícula" },
-      { id:"cidade", label:"Cidade" },
-      { id:"protocolo", label:"Protocolo do atendimento" },
-      { id:"vencimento", label:"Vencimento", placeholder:"DD/MM/AAAA" },
-      { id:"valor", label:"Valor", value:"R$ " },
-      { id:"competencia", label:"Competência", placeholder:"MM/AAAA" }
-    ],
-    gerar(d) {
-      return {
-        assunto: "BLOQUEAR DÉBITO EM CONTA",
-        corpo:
-`Matrícula: ${d.matricula}
-Cidade: ${d.cidade}
-Protocolo do atendimento: ${d.protocolo}
-Vencimento: ${d.vencimento}
-Valor: ${d.valor}
-Competência: ${d.competencia}`
-      }
-    }
-  },
+  const inicio = `${tipo} PROTOCOLO: ${protocolo} - `;
+  const campo = document.getElementById('comentario');
 
-  exclusao: {
-    titulo: "EXCLUSÃO DE CADASTRO DO SITE/APP.",
-    campos: [
-      { id:"nome", label:"Nome completo" },
-      { id:"matricula", label:"Matrícula" },
-      { id:"cpfCad", label:"CPF/CNPJ cadastrado" },
-      { id:"emailCad", label:"E-mail cadastrado" },
-      { id:"cpfCor", label:"CPF/CNPJ correto" }
-    ],
-    gerar(d) {
-      return {
-        assunto: "EXCLUSÃO DE CADASTRO DO SITE/APP.",
-        corpo:
-`Nome completo: ${d.nome}
-Matrícula: ${d.matricula}
-Concessão: Corsan
-CPF ou CNPJ cadastrado pelo cliente no site/App: ${d.cpfCad}
-E-mail cadastrado pelo cliente no site/App: ${d.emailCad}
-CPF ou CNPJ correto: ${d.cpfCor}
-Motivo da solicitação de exclusão: Dados incorretos`
-      }
-    }
-  },
-
-  religacao: {
-    titulo: "RELIGAÇÃO POR CORTE INDEVIDO",
-    campos: [
-      { id:"os", label:"Número da O.S." },
-      { id:"protocolo", label:"Protocolo" },
-      { id:"matricula", label:"Matrícula" },
-      { id:"cidade", label:"Cidade" },
-      { id:"vencimento", label:"Vencimento", placeholder:"DD/MM/AAAA" }
-    ],
-    gerar(d) {
-      return {
-        assunto: `RELIGAÇÃO POR CORTE INDEVIDO – REGIONAL – O.S. ${d.os} – PROTOCOLO: ${d.protocolo}`,
-        corpo:
-`Matrícula: ${d.matricula}
-Cidade: ${d.cidade}
-Vencimento: ${d.vencimento}`
-      }
-    }
+  if (!campo.value.startsWith(inicio)) {
+    campo.value = inicio;
   }
-
-};
-
-let atual = null;
-
-function abrir(tipo) {
-  atual = modelos[tipo];
-  titulo.innerText = atual.titulo;
-  campos.innerHTML = "";
-
-  atual.campos.forEach(c => {
-    campos.innerHTML += `
-      <label>${c.label}</label>
-      <input id="${c.id}" placeholder="${c.placeholder||""}" value="${c.value||""}">
-    `;
-  });
-
-  modal.style.display = "block";
-  document.body.style.overflow = "hidden";
 }
 
-function fechar() {
-  modal.style.display = "none";
-  document.body.style.overflow = "auto";
-}
-
-function copiar() {
-  let dados = {};
-  atual.campos.forEach(c => {
-    dados[c.id] = document.getElementById(c.id).value.toUpperCase();
-  });
-
-  const r = atual.gerar(dados);
-  const texto =
-`ASSUNTO: ${r.assunto}
-
-${r.corpo}
-
-${corpo.value}
-
-${assinatura}`;
+function copiarComentario() {
+  let texto = document.getElementById('comentario').value;
+  texto = texto.replace(/\n/g, " "); // sem quebra de linha
+  texto = texto.toUpperCase();
 
   navigator.clipboard.writeText(texto);
-  alert("Texto copiado!");
+  alert("Comentário copiado!");
 }
 </script>
 
