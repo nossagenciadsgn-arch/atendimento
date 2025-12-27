@@ -21,43 +21,29 @@ header { background:#2f3e46; color:#fff; padding:14px; text-align:center; font-w
 }
 .content.active { display:block; }
 
-.grid { display:grid; grid-template-columns:1fr; gap:10px; }
+button { padding:12px; cursor:pointer; font-size:14px; }
 
-button {
-  padding:12px;
-  cursor:pointer;
-  font-size:14px;
-}
-
-label {
-  font-weight:bold;
-  display:block;
-  margin-top:10px;
-}
-
+label { font-weight:bold; display:block; margin-top:10px; }
 input, textarea {
-  width:100%;
-  padding:8px;
-  margin-top:4px;
-  box-sizing:border-box;
+  width:100%; padding:8px; margin-top:4px; box-sizing:border-box;
 }
-
 textarea { resize:vertical; }
 
 .btn-full {
-  width:100%;
-  margin-top:14px;
-  background:#2f3e46;
-  color:#fff;
-  border:none;
-  font-weight:bold;
+  width:100%; margin-top:14px;
+  background:#2f3e46; color:#fff; border:none; font-weight:bold;
 }
 
-.presets {
-  display:grid;
-  grid-template-columns:1fr;
-  gap:8px;
-  margin-top:12px;
+.presets { display:grid; grid-template-columns:1fr; gap:8px; margin-top:12px; }
+
+/* Modal variável */
+.modal {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.4); z-index:20;
+}
+.modal-content {
+  background:#fff; padding:20px; width:300px;
+  margin:120px auto;
 }
 </style>
 </head>
@@ -68,41 +54,49 @@ textarea { resize:vertical; }
 
 <div class="tabs">
   <div class="tab active" onclick="openTab(event,'comentarios')">Comentários</div>
-  <div class="tab" onclick="openTab(event,'paralelas')">Paralelas</div>
 </div>
 
-<!-- ================= COMENTÁRIOS ================= -->
 <div id="comentarios" class="content active">
 
   <label>Protocolo</label>
   <input id="protocolo" placeholder="Digite o protocolo" oninput="gerarInicio()">
 
   <label>Comentário</label>
-  <textarea id="comentario" rows="4"
-    placeholder="Digite ou use os botões abaixo"></textarea>
+  <textarea id="comentario" rows="4"></textarea>
 
   <div class="presets">
-    <button onclick="usarPreset('2ª FATURA ENVIADA')">2ª FATURA ENVIADA</button>
-    <button onclick="usarPreset('VERIFICAÇÃO SITUAÇÃO ABASTECIMENTO – EXECUTADA')">
-      VERIFICAÇÃO SITUAÇÃO ABASTECIMENTO – EXECUTADA
+    <button onclick="usarPresetSimples('2ª FATURA ENVIADA')">2ª FATURA ENVIADA</button>
+
+    <button onclick="presetVariavel(
+      'SERVIÇO SOLICITADO E NÃO PRESTADO – {VAR} – ENVIADO VIA FORMS',
+      'Digite o tipo de serviço'
+    )">
+      Serviço não prestado – Forms
     </button>
-    <button onclick="usarPreset('INFORMA FALTA DE ÁGUA – ABERTURA DE SOLICITAÇÃO')">
-      INFORMA FALTA DE ÁGUA – ABERTURA DE SOLICITAÇÃO
+
+    <button onclick="presetVariavel(
+      'SERVIÇO SOLICITADO E NÃO PRESTADO – {VAR} – ENVIADO PARA SUPERVISORA',
+      'Digite o tipo de serviço'
+    )">
+      Serviço não prestado – Supervisora
     </button>
   </div>
 
   <button class="btn-full" onclick="copiarComentario()">COPIAR COMENTÁRIO</button>
-
 </div>
 
-<!-- ================= PARALELAS ================= -->
-<div id="paralelas" class="content">
-  <p>Paralelas permanecem como já configuradas.</p>
+<!-- MODAL VARIÁVEL -->
+<div id="modalVar" class="modal">
+  <div class="modal-content">
+    <label id="labelVar"></label>
+    <input id="inputVar">
+    <button class="btn-full" onclick="confirmarVariavel()">OK</button>
+  </div>
 </div>
 
 <script>
-// CONFIG FIXA (por enquanto)
 let tipoAtendimento = "CALL CENTER";
+let modeloAtual = "";
 
 function openTab(evt,id){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -112,33 +106,45 @@ function openTab(evt,id){
 }
 
 function gerarInicio() {
-  const protocolo = document.getElementById('protocolo').value.trim();
+  const protocolo = protocoloInput.value.trim();
   if (!protocolo) return;
 
   const inicio = `${tipoAtendimento} PROTOCOLO: ${protocolo} - `;
-  const campo = document.getElementById('comentario');
-
-  if (!campo.value.startsWith(inicio)) {
-    campo.value = inicio;
+  if (!comentario.value.startsWith(inicio)) {
+    comentario.value = inicio;
   }
 }
 
-function usarPreset(texto) {
-  const campo = document.getElementById('comentario');
-  let atual = campo.value;
-
-  if (!atual.includes(" - ")) return;
-
-  if (!atual.endsWith(" ")) atual += " ";
-
-  campo.value = atual + texto;
+function usarPresetSimples(txt) {
+  if (!comentario.value.endsWith(" ")) comentario.value += " ";
+  comentario.value += txt;
 }
 
-function copiarComentario() {
-  let texto = document.getElementById('comentario').value;
-  texto = texto.replace(/\n/g, " ");
-  texto = texto.toUpperCase();
+function presetVariavel(modelo, label) {
+  modeloAtual = modelo;
+  labelVar.innerText = label;
+  inputVar.value = "";
+  modalVar.style.display = "block";
+  inputVar.focus();
+}
 
+function confirmarVariavel() {
+  let valor = inputVar.value.trim().toUpperCase();
+  if (!valor) return;
+
+  let texto = modeloAtual.replace("{VAR}", valor);
+  if (!comentario.value.endsWith(" ")) comentario.value += " ";
+  comentario.value += texto;
+
+  modalVar.style.display = "none";
+}
+
+inputVar.addEventListener("keydown", e => {
+  if (e.key === "Enter") confirmarVariavel();
+});
+
+function copiarComentario() {
+  let texto = comentario.value.replace(/\n/g, " ").toUpperCase();
   navigator.clipboard.writeText(texto);
   alert("Comentário copiado!");
 }
