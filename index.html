@@ -52,6 +52,13 @@ textarea { resize:vertical; }
   border:none;
   font-weight:bold;
 }
+
+.presets {
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  margin-top:12px;
+}
 </style>
 </head>
 
@@ -67,18 +74,22 @@ textarea { resize:vertical; }
 <!-- ================= COMENTÁRIOS ================= -->
 <div id="comentarios" class="content active">
 
-  <label>Tipo de atendimento</label>
-  <select id="tipo" onchange="atualizarPrefixo()">
-    <option value="CALL CENTER">Call Center</option>
-    <option value="LOJA">Loja</option>
-  </select>
-
   <label>Protocolo</label>
   <input id="protocolo" placeholder="Digite o protocolo" oninput="gerarInicio()">
 
   <label>Comentário</label>
   <textarea id="comentario" rows="4"
-    placeholder="Digite ou complete o comentário"></textarea>
+    placeholder="Digite ou use os botões abaixo"></textarea>
+
+  <div class="presets">
+    <button onclick="usarPreset('2ª FATURA ENVIADA')">2ª FATURA ENVIADA</button>
+    <button onclick="usarPreset('VERIFICAÇÃO SITUAÇÃO ABASTECIMENTO – EXECUTADA')">
+      VERIFICAÇÃO SITUAÇÃO ABASTECIMENTO – EXECUTADA
+    </button>
+    <button onclick="usarPreset('INFORMA FALTA DE ÁGUA – ABERTURA DE SOLICITAÇÃO')">
+      INFORMA FALTA DE ÁGUA – ABERTURA DE SOLICITAÇÃO
+    </button>
+  </div>
 
   <button class="btn-full" onclick="copiarComentario()">COPIAR COMENTÁRIO</button>
 
@@ -86,14 +97,13 @@ textarea { resize:vertical; }
 
 <!-- ================= PARALELAS ================= -->
 <div id="paralelas" class="content">
-  <div class="grid">
-    <button onclick="alert('Paralelas continuam funcionando aqui')">
-      Paralelas já configuradas
-    </button>
-  </div>
+  <p>Paralelas permanecem como já configuradas.</p>
 </div>
 
 <script>
+// CONFIG FIXA (por enquanto)
+let tipoAtendimento = "CALL CENTER";
+
 function openTab(evt,id){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
@@ -101,16 +111,11 @@ function openTab(evt,id){
   document.getElementById(id).classList.add('active');
 }
 
-function atualizarPrefixo() {
-  gerarInicio();
-}
-
 function gerarInicio() {
-  const tipo = document.getElementById('tipo').value;
   const protocolo = document.getElementById('protocolo').value.trim();
   if (!protocolo) return;
 
-  const inicio = `${tipo} PROTOCOLO: ${protocolo} - `;
+  const inicio = `${tipoAtendimento} PROTOCOLO: ${protocolo} - `;
   const campo = document.getElementById('comentario');
 
   if (!campo.value.startsWith(inicio)) {
@@ -118,9 +123,20 @@ function gerarInicio() {
   }
 }
 
+function usarPreset(texto) {
+  const campo = document.getElementById('comentario');
+  let atual = campo.value;
+
+  if (!atual.includes(" - ")) return;
+
+  if (!atual.endsWith(" ")) atual += " ";
+
+  campo.value = atual + texto;
+}
+
 function copiarComentario() {
   let texto = document.getElementById('comentario').value;
-  texto = texto.replace(/\n/g, " "); // sem quebra de linha
+  texto = texto.replace(/\n/g, " ");
   texto = texto.toUpperCase();
 
   navigator.clipboard.writeText(texto);
