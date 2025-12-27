@@ -4,6 +4,216 @@
 <meta charset="UTF-8">
 <title>Central de Atendimento</title>
 
+<script>
+/* ================== TABS ================== */
+function openTab(evt, id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  evt.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+/* ================== COMENTÁRIOS ================== */
+function atualizarPrefixo() {
+  const canal = canalSelect().value;
+  const p = protocolo.value.trim();
+  if (!p) return;
+  comentario.value = `${canal} PROTOCOLO: ${p} - `;
+}
+
+function canalSelect() {
+  return document.getElementById("canal");
+}
+
+function copiarComentario() {
+  navigator.clipboard.writeText(comentario.value.toUpperCase());
+}
+
+/* ----- ATALHOS ----- */
+function atalhoServico(destino) {
+  const tipo = prompt("Informe o tipo de serviço:");
+  if (!tipo) return;
+  adicionarTexto(`SERVIÇO SOLICITADO E NÃO PRESTADO - ${tipo.toUpperCase()} - ENVIADO PARA ${destino}`);
+}
+
+function atalhoSegundaVia() {
+  adicionarTexto("2ª FATURA AGORA - ENVIADA");
+}
+
+function atalhoFaltaAgua() {
+  adicionarTexto("INFORMA FALTA DE ÁGUA - ABERTURA DE SOLICITAÇÃO");
+}
+
+function atalhoAbastecimento() {
+  const previsao = prompt("Informe a previsão (ex: 14H 22/09):");
+  if (!previsao) return;
+  adicionarTexto(`VERIFICAÇÃO SITUAÇÃO ABASTECIMENTO – EXECUTADA (PREVISÃO RETORNO ${previsao.toUpperCase()})`);
+}
+
+function adicionarTexto(txt) {
+  if (!comentario.value.includes("PROTOCOLO")) atualizarPrefixo();
+  if (!comentario.value.endsWith(" ")) comentario.value += " ";
+  comentario.value += txt;
+}
+
+/* ================== PENDÊNCIAS ================== */
+let pendencias = JSON.parse(localStorage.getItem("pendencias") || "[]");
+
+function salvarPendencia() {
+  const mat = prompt("Informe a matrícula:");
+  if (!mat) return;
+  pendencias.push({
+    matricula: mat,
+    texto: comentario.value
+  });
+  localStorage.setItem("pendencias", JSON.stringify(pendencias));
+  carregarPendencias();
+  alert("Pendência salva");
+}
+
+function carregarPendencias() {
+  const tbody = document.getElementById("listaPendencias");
+  tbody.innerHTML = "";
+  pendencias.forEach((p, i) => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${p.matricula}</td>
+        <td>${p.texto.slice(0,60)}...</td>
+        <td>
+          <span class="icon-btn" onclick="copiarTexto('${p.matricula}')">📋M</span>
+          <span class="icon-btn" onclick="copiarTexto('${p.texto.replace(/'/g,"")}')">📋C</span>
+          <span class="icon-btn" onclick="excluirPendencia(${i})">🗑</span>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function copiarTexto(txt) {
+  navigator.clipboard.writeText(txt);
+}
+
+function excluirPendencia(i) {
+  if (!confirm("Excluir pendência?")) return;
+  pendencias.splice(i,1);
+  localStorage.setItem("pendencias", JSON.stringify(pendencias));
+  carregarPendencias();
+}
+
+/* ================== PARALELAS ================== */
+function carregarParalela() {
+  const tipo = tipoParalela.value;
+  let texto = "";
+
+  if (tipo === "cancelamento") texto =
+`CANCELAMENTO DE SOLICITAÇÃO
+
+MATRÍCULA:
+CIDADE:
+PROTOCOLO DO ATENDIMENTO:
+SERVIÇO QUE O CLIENTE SOLICITA O CANCELAMENTO:
+Nº SOLICITAÇÃO:
+MOTIVO DO CANCELAMENTO:`;
+
+  if (tipo === "pipa") texto =
+`CAMINHÃO PIPA
+
+PROTOCOLO DO ATENDIMENTO:
+BAIRRO:
+CIDADE:
+MATRÍCULA:
+ENDEREÇO:
+CELULAR PARA CONTATO:`;
+
+  if (tipo === "retificacao") texto =
+`(SERVIÇO) FORA DO PRAZO, REFERENTE À COMPETÊNCIA: XX/XXXX.
+DATA DA SOLICITAÇÃO:
+MATRÍCULA:
+CIDADE:
+PROTOCOLO DO ATENDIMENTO:`;
+
+  if (tipo === "debito") texto =
+`BLOQUEAR DÉBITO EM CONTA
+
+MATRÍCULA:
+CIDADE:
+PROTOCOLO DO ATENDIMENTO:
+VENCIMENTO: XX/XX/XXXX
+VALOR: R$
+COMPETÊNCIA: XX/XXXX`;
+
+  if (tipo === "exclusao") texto =
+`EXCLUSÃO DE CADASTRO DO SITE/APP
+
+NOME COMPLETO:
+MATRÍCULA:
+CONCESSÃO: CORSAN
+CPF OU CNPJ CADASTRADO:
+E-MAIL CADASTRADO:
+CPF OU CNPJ CORRETO:
+MOTIVO DA SOLICITAÇÃO DE EXCLUSÃO: DADOS INCORRETOS`;
+
+  if (tipo === "religacao") texto =
+`RELIGAÇÃO POR CORTE INDEVIDO – REGIONAL – O.S. XXXXXXX – PROTOCOLO: XXXXXXX
+
+MATRÍCULA:
+CIDADE:
+PROTOCOLO DO ATENDIMENTO:
+VENCIMENTO: XX/XX/XXXX`;
+
+  textoParalela.value = texto;
+}
+
+function copiarParalela() {
+  navigator.clipboard.writeText(textoParalela.value);
+}
+
+/* ================== O.S. ================== */
+const OS_DATA = {
+  troca_mov: ["MATRÍCULA","ENDEREÇO","CIDADE","NOVO TITULAR","CPF DO NOVO TITULAR","DATA DA MOVIMENTAÇÃO","LEITURA","OBSERVAÇÕES"],
+  troca_manual: ["MATRÍCULA","ENDEREÇO","CIDADE","NOVO TITULAR","CPF","OBSERVAÇÕES"],
+  troca_excecao: ["MATRÍCULA","ENDEREÇO","CIDADE","NOVO TITULAR","CPF","MOTIVO DA EXCEÇÃO"],
+  tarifa: ["MATRÍCULA","CIDADE","CPF","NIS","OBSERVAÇÕES"],
+  verificacao: ["MATRÍCULA","CIDADE","INFORMAÇÃO"],
+  supressao: ["MATRÍCULA","CIDADE","MOTIVO"],
+  vaz_quadro: ["MATRÍCULA","CIDADE","DESCRIÇÃO"],
+  vaz_rua: ["ENDEREÇO","CIDADE","REFERÊNCIA"],
+  falta_agua: ["MATRÍCULA","CIDADE","OBSERVAÇÕES"]
+};
+
+function carregarOS() {
+  const tipo = tipoOS.value;
+  camposOS.innerHTML = "";
+  if (!OS_DATA[tipo]) return;
+  OS_DATA[tipo].forEach(c => {
+    camposOS.innerHTML += `<label>${c}</label><input data-os="${c}">`;
+  });
+  atualizarOS();
+}
+
+document.addEventListener("input", e => {
+  if (e.target.closest("#os")) atualizarOS();
+});
+
+function atualizarOS() {
+  const tipo = tipoOS.value;
+  if (!OS_DATA[tipo]) return;
+  let texto = tipoOS.selectedOptions[0].text.toUpperCase() + "\n\n";
+  document.querySelectorAll("#camposOS input").forEach(i => {
+    texto += i.dataset.os + ": " + i.value + "\n";
+  });
+  textoOS.value = texto.toUpperCase();
+}
+
+function copiarOS() {
+  navigator.clipboard.writeText(textoOS.value);
+}
+
+/* INIT */
+carregarPendencias();
+</script>
+
+  
 <style>
 body {
   margin: 0;
