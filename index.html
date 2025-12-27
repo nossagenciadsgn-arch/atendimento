@@ -21,7 +21,7 @@ header { background:#2f3e46; color:#fff; padding:14px; text-align:center; font-w
 }
 .content.active { display:block; }
 
-button { padding:10px; cursor:pointer; font-size:14px; }
+button { padding:8px 10px; cursor:pointer; font-size:13px; }
 
 label { font-weight:bold; display:block; margin-top:10px; }
 input, textarea {
@@ -45,9 +45,14 @@ th, td {
   border:1px solid #ccc;
   padding:8px;
   font-size:13px;
+  vertical-align:top;
 }
 th { background:#eee; }
-tr:hover { background:#f0f0f0; cursor:pointer; }
+
+td .acoes {
+  display:flex;
+  gap:6px;
+}
 
 .modal {
   display:none; position:fixed; inset:0;
@@ -101,18 +106,16 @@ tr:hover { background:#f0f0f0; cursor:pointer; }
 
 <!-- ================= PENDÊNCIAS ================= -->
 <div id="pendencias" class="content">
-
   <table>
     <thead>
       <tr>
         <th>Matrícula</th>
         <th>Comentário</th>
-        <th>Ação</th>
+        <th>Ações</th>
       </tr>
     </thead>
     <tbody id="listaPendencias"></tbody>
   </table>
-
 </div>
 
 <!-- MODAL VARIÁVEL -->
@@ -127,7 +130,8 @@ tr:hover { background:#f0f0f0; cursor:pointer; }
 <script>
 let tipoAtendimento = "CALL CENTER";
 let modeloAtual = "";
-let pendencias = [];
+
+let pendencias = JSON.parse(localStorage.getItem("pendencias") || "[]");
 
 const protocoloInput = document.getElementById("protocolo");
 const comentario = document.getElementById("comentario");
@@ -183,6 +187,7 @@ function salvarPendencia() {
   if (!mat || !txt) return alert("Matrícula e comentário são obrigatórios.");
 
   pendencias.push({mat, txt});
+  localStorage.setItem("pendencias", JSON.stringify(pendencias));
   atualizarTabela();
   alert("Pendência salva!");
 }
@@ -190,12 +195,18 @@ function salvarPendencia() {
 function atualizarTabela() {
   const tbody = document.getElementById("listaPendencias");
   tbody.innerHTML = "";
+
   pendencias.forEach((p,i)=>{
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td onclick="copiarTexto('${p.mat}')">${p.mat}</td>
-      <td onclick="copiarTexto('${p.txt.replace(/'/g,"")}')">${p.txt}</td>
-      <td><button onclick="excluirPendencia(${i})">Excluir</button></td>
+      <td>${p.mat}</td>
+      <td>${p.txt}</td>
+      <td>
+        <div class="acoes">
+          <button onclick="copiarTexto('${p.txt.replace(/'/g,"")}')">Copiar</button>
+          <button onclick="excluirPendencia(${i})">Excluir</button>
+        </div>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -207,8 +218,242 @@ function copiarTexto(txt){
 
 function excluirPendencia(i){
   pendencias.splice(i,1);
+  localStorage.setItem("pendencias", JSON.stringify(pendencias));
   atualizarTabela();
 }
+
+// Carrega pendências ao abrir
+atualizarTabela();
+</script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Central de Atendimento</title>
+
+<style>
+body { font-family: Arial, sans-serif; margin:0; background:#f4f4f4; }
+header { background:#2f3e46; color:#fff; padding:14px; text-align:center; font-weight:bold; }
+
+.tabs { display:flex; background:#cad2c5; }
+.tab { padding:10px 16px; cursor:pointer; border-right:1px solid #999; }
+.tab.active { background:#fff; font-weight:bold; }
+
+.content {
+  display:none;
+  padding:16px;
+  background:#fff;
+  height:calc(100vh - 90px);
+  overflow-y:auto;
+}
+.content.active { display:block; }
+
+button { padding:8px 10px; cursor:pointer; font-size:13px; }
+
+label { font-weight:bold; display:block; margin-top:10px; }
+input, textarea {
+  width:100%; padding:8px; margin-top:4px; box-sizing:border-box;
+}
+textarea { resize:vertical; }
+
+.btn-full {
+  width:100%; margin-top:14px;
+  background:#2f3e46; color:#fff; border:none; font-weight:bold;
+}
+
+.presets { display:grid; grid-template-columns:1fr; gap:8px; margin-top:12px; }
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th, td {
+  border:1px solid #ccc;
+  padding:8px;
+  font-size:13px;
+  vertical-align:top;
+}
+th { background:#eee; }
+
+td .acoes {
+  display:flex;
+  gap:6px;
+}
+
+.modal {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.4); z-index:20;
+}
+.modal-content {
+  background:#fff; padding:20px; width:300px;
+  margin:120px auto;
+}
+</style>
+</head>
+
+<body>
+
+<header>CENTRAL DE ATENDIMENTO</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="openTab(event,'comentarios')">Comentários</div>
+  <div class="tab" onclick="openTab(event,'pendencias')">Pendências</div>
+</div>
+
+<!-- ================= COMENTÁRIOS ================= -->
+<div id="comentarios" class="content active">
+
+  <label>Matrícula</label>
+  <input id="matricula">
+
+  <label>Protocolo</label>
+  <input id="protocolo" oninput="gerarInicio()">
+
+  <label>Comentário</label>
+  <textarea id="comentario" rows="4"></textarea>
+
+  <div class="presets">
+    <button onclick="usarPresetSimples('2ª FATURA ENVIADA')">2ª FATURA ENVIADA</button>
+
+    <button onclick="presetVariavel(
+      'SERVIÇO SOLICITADO E NÃO PRESTADO – {VAR} – ENVIADO VIA FORMS',
+      'Digite o tipo de serviço'
+    )">Serviço não prestado – Forms</button>
+
+    <button onclick="presetVariavel(
+      'SERVIÇO SOLICITADO E NÃO PRESTADO – {VAR} – ENVIADO PARA SUPERVISORA',
+      'Digite o tipo de serviço'
+    )">Serviço não prestado – Supervisora</button>
+  </div>
+
+  <button class="btn-full" onclick="copiarComentario()">COPIAR COMENTÁRIO</button>
+  <button class="btn-full" onclick="salvarPendencia()">SALVAR PENDÊNCIA</button>
+</div>
+
+<!-- ================= PENDÊNCIAS ================= -->
+<div id="pendencias" class="content">
+  <table>
+    <thead>
+      <tr>
+        <th>Matrícula</th>
+        <th>Comentário</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="listaPendencias"></tbody>
+  </table>
+</div>
+
+<!-- MODAL VARIÁVEL -->
+<div id="modalVar" class="modal">
+  <div class="modal-content">
+    <label id="labelVar"></label>
+    <input id="inputVar">
+    <button class="btn-full" onclick="confirmarVariavel()">OK</button>
+  </div>
+</div>
+
+<script>
+let tipoAtendimento = "CALL CENTER";
+let modeloAtual = "";
+
+let pendencias = JSON.parse(localStorage.getItem("pendencias") || "[]");
+
+const protocoloInput = document.getElementById("protocolo");
+const comentario = document.getElementById("comentario");
+
+function openTab(evt,id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  evt.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+function gerarInicio() {
+  const protocolo = protocoloInput.value.trim();
+  if (!protocolo) return;
+  const inicio = `${tipoAtendimento} PROTOCOLO: ${protocolo} - `;
+  if (!comentario.value.startsWith(inicio)) comentario.value = inicio;
+}
+
+function usarPresetSimples(txt) {
+  if (!comentario.value.endsWith(" ")) comentario.value += " ";
+  comentario.value += txt;
+}
+
+function presetVariavel(modelo, label) {
+  modeloAtual = modelo;
+  labelVar.innerText = label;
+  inputVar.value = "";
+  modalVar.style.display = "block";
+  inputVar.focus();
+}
+
+function confirmarVariavel() {
+  const valor = inputVar.value.trim().toUpperCase();
+  if (!valor) return;
+  if (!comentario.value.endsWith(" ")) comentario.value += " ";
+  comentario.value += modeloAtual.replace("{VAR}", valor);
+  modalVar.style.display = "none";
+}
+
+inputVar.addEventListener("keydown", e => {
+  if (e.key === "Enter") confirmarVariavel();
+});
+
+function copiarComentario() {
+  const txt = comentario.value.replace(/\n/g," ").toUpperCase();
+  navigator.clipboard.writeText(txt);
+  alert("Comentário copiado!");
+}
+
+function salvarPendencia() {
+  const mat = document.getElementById("matricula").value.trim();
+  const txt = comentario.value.trim();
+  if (!mat || !txt) return alert("Matrícula e comentário são obrigatórios.");
+
+  pendencias.push({mat, txt});
+  localStorage.setItem("pendencias", JSON.stringify(pendencias));
+  atualizarTabela();
+  alert("Pendência salva!");
+}
+
+function atualizarTabela() {
+  const tbody = document.getElementById("listaPendencias");
+  tbody.innerHTML = "";
+
+  pendencias.forEach((p,i)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.mat}</td>
+      <td>${p.txt}</td>
+      <td>
+        <div class="acoes">
+          <button onclick="copiarTexto('${p.txt.replace(/'/g,"")}')">Copiar</button>
+          <button onclick="excluirPendencia(${i})">Excluir</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function copiarTexto(txt){
+  navigator.clipboard.writeText(txt.toUpperCase());
+}
+
+function excluirPendencia(i){
+  pendencias.splice(i,1);
+  localStorage.setItem("pendencias", JSON.stringify(pendencias));
+  atualizarTabela();
+}
+
+// Carrega pendências ao abrir
+atualizarTabela();
 </script>
 
 </body>
