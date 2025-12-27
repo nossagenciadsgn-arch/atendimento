@@ -81,11 +81,11 @@ button {
 .box {
   background: #eee;
   padding: 10px;
-  margin-top: 10px;
+  margin-bottom: 10px;
   font-size: 13px;
 }
 
-.form-box {
+.template {
   border: 1px solid #ccc;
   padding: 12px;
   margin-top: 12px;
@@ -131,14 +131,98 @@ button {
     barbara.piva@aeparceiros.com.br
   </div>
 
-  <button onclick="abrirParalela('cancelamento')">Cancelamento de Solicitação</button>
-  <button onclick="abrirParalela('pipa')">Caminhão Pipa</button>
-  <button onclick="abrirParalela('retificacao')">Retificação fora do prazo</button>
-  <button onclick="abrirParalela('debito')">Bloquear débito em conta</button>
-  <button onclick="abrirParalela('exclusao')">Exclusão cadastro site/app</button>
-  <button onclick="abrirParalela('religacao')">Religação por corte indevido</button>
+  <!-- Cancelamento -->
+  <div class="template">
+    <b>CANCELAMENTO DE SOLICITAÇÃO</b>
+    <textarea rows="7">
+CANCELAMENTO DE SOLICITAÇÃO
 
-  <div id="paralela_form"></div>
+MATRÍCULA:
+CIDADE:
+PROTOCOLO DO ATENDIMENTO:
+SERVIÇO QUE O CLIENTE SOLICITA O CANCELAMENTO:
+Nº SOLICITAÇÃO:
+MOTIVO DO CANCELAMENTO:
+    </textarea>
+    <button class="btn-full" onclick="copiarTemplate(this)">COPIAR</button>
+  </div>
+
+  <!-- Caminhão Pipa -->
+  <div class="template">
+    <b>CAMINHÃO PIPA</b>
+    <textarea rows="7">
+CAMINHÃO PIPA
+
+PROTOCOLO DO ATENDIMENTO:
+BAIRRO:
+CIDADE:
+MATRÍCULA:
+ENDEREÇO:
+CELULAR PARA CONTATO:
+    </textarea>
+    <button class="btn-full" onclick="copiarTemplate(this)">COPIAR</button>
+  </div>
+
+  <!-- Retificação -->
+  <div class="template">
+    <b>(SERVIÇO) FORA DO PRAZO</b>
+    <textarea rows="7">
+(SERVIÇO) FORA DO PRAZO, REFERENTE À COMPETÊNCIA: XX/XXXX.
+DATA DA SOLICITAÇÃO:
+MATRÍCULA:
+CIDADE:
+PROTOCOLO DO ATENDIMENTO:
+    </textarea>
+    <button class="btn-full" onclick="copiarTemplate(this)">COPIAR</button>
+  </div>
+
+  <!-- Débito -->
+  <div class="template">
+    <b>BLOQUEAR DÉBITO EM CONTA</b>
+    <textarea rows="7">
+BLOQUEAR DÉBITO EM CONTA
+
+MATRÍCULA:
+CIDADE:
+PROTOCOLO DO ATENDIMENTO:
+VENCIMENTO: XX/XX/XXXX
+VALOR: R$
+COMPETÊNCIA: XX/XXXX
+    </textarea>
+    <button class="btn-full" onclick="copiarTemplate(this)">COPIAR</button>
+  </div>
+
+  <!-- Exclusão -->
+  <div class="template">
+    <b>EXCLUSÃO DE CADASTRO DO SITE/APP</b>
+    <textarea rows="8">
+EXCLUSÃO DE CADASTRO DO SITE/APP
+
+NOME COMPLETO:
+MATRÍCULA:
+CONCESSÃO: CORSAN
+CPF OU CNPJ CADASTRADO:
+E-MAIL CADASTRADO:
+CPF OU CNPJ CORRETO:
+MOTIVO DA SOLICITAÇÃO DE EXCLUSÃO: DADOS INCORRETOS
+    </textarea>
+    <button class="btn-full" onclick="copiarTemplate(this)">COPIAR</button>
+  </div>
+
+  <!-- Religação -->
+  <div class="template">
+    <b>RELIGAÇÃO POR CORTE INDEVIDO</b>
+    <textarea rows="7">
+RELIGAÇÃO POR CORTE INDEVIDO – REGIONAL – O.S. XXXXXXX – PROTOCOLO: XXXXXXX
+
+MATRÍCULA:
+CIDADE:
+PROTOCOLO DO ATENDIMENTO:
+VENCIMENTO: XX/XX/XXXX
+    </textarea>
+    <button class="btn-full" onclick="copiarTemplate(this)">COPIAR</button>
+  </div>
+
 </div>
 
 <!-- ================= O.S. ================= -->
@@ -161,9 +245,9 @@ button {
   <div class="box">
     <b>DADOS DO CLIENTE (APENAS PARA CONSULTA)</b>
     <label>Nome do cliente</label>
-    <input id="os_nome">
+    <input>
     <label>Telefone</label>
-    <input id="os_tel">
+    <input>
   </div>
 
   <div id="os_campos"></div>
@@ -175,7 +259,6 @@ button {
 </div>
 
 <script>
-/* ===== TABS ===== */
 function openTab(evt, id) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -183,111 +266,26 @@ function openTab(evt, id) {
   document.getElementById(id).classList.add('active');
 }
 
-/* ===== COMENTÁRIOS ===== */
+/* COMENTÁRIOS */
 function gerarComentario() {
   const canal = document.getElementById("canal").value;
   const p = document.getElementById("protocolo").value.trim();
   if (!p) return;
   document.getElementById("comentario").value = `${canal} PROTOCOLO: ${p} - `;
 }
-
 function copiarComentario() {
   navigator.clipboard.writeText(
     document.getElementById("comentario").value.toUpperCase()
   );
 }
 
-/* ===== PARALELAS ===== */
-function abrirParalela(tipo) {
-  const div = document.getElementById("paralela_form");
-  let html = `<div class="form-box">`;
-
-  if (tipo === "cancelamento") {
-    html += `
-      <b>ASSUNTO: CANCELAMENTO DE SOLICITAÇÃO</b>
-      <label>Matrícula</label><input>
-      <label>Cidade</label><input>
-      <label>Protocolo do atendimento</label><input>
-      <label>Serviço</label><input>
-      <label>Nº solicitação</label><input>
-      <label>Motivo</label><input>
-    `;
-  }
-
-  if (tipo === "pipa") {
-    html += `
-      <b>ASSUNTO: CAMINHÃO PIPA</b>
-      <label>Protocolo</label><input>
-      <label>Bairro</label><input>
-      <label>Cidade</label><input>
-      <label>Matrícula</label><input>
-      <label>Endereço</label><input>
-      <label>Celular</label><input>
-    `;
-  }
-
-  if (tipo === "retificacao") {
-    html += `
-      <b>ASSUNTO: (SERVIÇO) FORA DO PRAZO</b>
-      <label>Serviço</label><input>
-      <label>Competência (MM/AAAA)</label><input>
-      <label>Data da solicitação</label><input>
-      <label>Matrícula</label><input>
-      <label>Cidade</label><input>
-      <label>Protocolo</label><input>
-    `;
-  }
-
-  if (tipo === "debito") {
-    html += `
-      <b>ASSUNTO: BLOQUEAR DÉBITO EM CONTA</b>
-      <label>Matrícula</label><input>
-      <label>Cidade</label><input>
-      <label>Protocolo</label><input>
-      <label>Vencimento</label><input>
-      <label>Valor</label><input>
-      <label>Competência</label><input>
-    `;
-  }
-
-  if (tipo === "exclusao") {
-    html += `
-      <b>ASSUNTO: EXCLUSÃO DE CADASTRO DO SITE/APP</b>
-      <label>Nome completo</label><input>
-      <label>Matrícula</label><input>
-      <label>CPF/CNPJ cadastrado</label><input>
-      <label>E-mail cadastrado</label><input>
-      <label>CPF/CNPJ correto</label><input>
-      <label>Motivo</label><input value="DADOS INCORRETOS">
-    `;
-  }
-
-  if (tipo === "religacao") {
-    html += `
-      <b>ASSUNTO: RELIGAÇÃO POR CORTE INDEVIDO – REGIONAL – O.S. – PROTOCOLO</b>
-      <label>O.S.</label><input>
-      <label>Protocolo</label><input>
-      <label>Matrícula</label><input>
-      <label>Cidade</label><input>
-      <label>Vencimento</label><input>
-    `;
-  }
-
-  html += `
-    <label>Texto do e-mail</label>
-    <textarea rows="6"></textarea>
-    <button class="btn-full" onclick="copiarParalela()">COPIAR E-MAIL</button>
-  </div>`;
-
-  div.innerHTML = html;
+/* PARALELAS */
+function copiarTemplate(btn) {
+  const textarea = btn.previousElementSibling;
+  navigator.clipboard.writeText(textarea.value);
 }
 
-function copiarParalela() {
-  const t = document.querySelector("#paralela_form textarea").value;
-  navigator.clipboard.writeText(t);
-}
-
-/* ===== O.S. ===== */
+/* O.S. */
 const OS_DATA = {
   troca_mov: ["MATRÍCULA","ENDEREÇO","CIDADE","NOVO TITULAR","CPF DO NOVO TITULAR","DATA DA MOVIMENTAÇÃO","LEITURA","OBSERVAÇÕES"],
   troca_manual: ["MATRÍCULA","ENDEREÇO","CIDADE","NOVO TITULAR","CPF","OBSERVAÇÕES"],
@@ -304,13 +302,11 @@ function carregarOS() {
   const tipo = document.getElementById("os_tipo").value;
   const div = document.getElementById("os_campos");
   div.innerHTML = "";
-
   if (!OS_DATA[tipo]) return;
 
   OS_DATA[tipo].forEach(c => {
     div.innerHTML += `<label>${c}</label><input data-os="${c}">`;
   });
-
   atualizarOSTexto();
 }
 
@@ -321,12 +317,10 @@ document.addEventListener("input", e => {
 function atualizarOSTexto() {
   const tipo = document.getElementById("os_tipo").value;
   if (!OS_DATA[tipo]) return;
-
   let texto = document.getElementById("os_tipo").selectedOptions[0].text.toUpperCase() + "\n\n";
   document.querySelectorAll("#os_campos input").forEach(i => {
     texto += i.dataset.os + ": " + i.value + "\n";
   });
-
   document.getElementById("os_texto").value = texto.toUpperCase();
 }
 
