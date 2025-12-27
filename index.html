@@ -21,7 +21,7 @@ header { background:#2f3e46; color:#fff; padding:14px; text-align:center; font-w
 }
 .content.active { display:block; }
 
-button { padding:12px; cursor:pointer; font-size:14px; }
+button { padding:10px; cursor:pointer; font-size:14px; }
 
 label { font-weight:bold; display:block; margin-top:10px; }
 input, textarea {
@@ -34,25 +34,27 @@ textarea { resize:vertical; }
   background:#2f3e46; color:#fff; border:none; font-weight:bold;
 }
 
-.presets {
-  display:grid;
-  grid-template-columns:1fr;
-  gap:8px;
-  margin-top:12px;
-}
+.presets { display:grid; grid-template-columns:1fr; gap:8px; margin-top:12px; }
 
-/* Modal variável */
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th, td {
+  border:1px solid #ccc;
+  padding:8px;
+  font-size:13px;
+}
+th { background:#eee; }
+tr:hover { background:#f0f0f0; cursor:pointer; }
+
 .modal {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.4);
-  z-index:20;
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.4); z-index:20;
 }
 .modal-content {
-  background:#fff;
-  padding:20px;
-  width:300px;
+  background:#fff; padding:20px; width:300px;
   margin:120px auto;
 }
 </style>
@@ -63,38 +65,54 @@ textarea { resize:vertical; }
 <header>CENTRAL DE ATENDIMENTO</header>
 
 <div class="tabs">
-  <div class="tab active">Comentários</div>
+  <div class="tab active" onclick="openTab(event,'comentarios')">Comentários</div>
+  <div class="tab" onclick="openTab(event,'pendencias')">Pendências</div>
 </div>
 
-<div class="content active">
+<!-- ================= COMENTÁRIOS ================= -->
+<div id="comentarios" class="content active">
+
+  <label>Matrícula</label>
+  <input id="matricula">
 
   <label>Protocolo</label>
-  <input id="protocolo" placeholder="Digite o protocolo" oninput="gerarInicio()">
+  <input id="protocolo" oninput="gerarInicio()">
 
   <label>Comentário</label>
   <textarea id="comentario" rows="4"></textarea>
 
   <div class="presets">
-    <button onclick="usarPresetSimples('2ª FATURA ENVIADA')">
-      2ª FATURA ENVIADA
-    </button>
+    <button onclick="usarPresetSimples('2ª FATURA ENVIADA')">2ª FATURA ENVIADA</button>
 
     <button onclick="presetVariavel(
       'SERVIÇO SOLICITADO E NÃO PRESTADO – {VAR} – ENVIADO VIA FORMS',
       'Digite o tipo de serviço'
-    )">
-      Serviço não prestado – Forms
-    </button>
+    )">Serviço não prestado – Forms</button>
 
     <button onclick="presetVariavel(
       'SERVIÇO SOLICITADO E NÃO PRESTADO – {VAR} – ENVIADO PARA SUPERVISORA',
       'Digite o tipo de serviço'
-    )">
-      Serviço não prestado – Supervisora
-    </button>
+    )">Serviço não prestado – Supervisora</button>
   </div>
 
   <button class="btn-full" onclick="copiarComentario()">COPIAR COMENTÁRIO</button>
+  <button class="btn-full" onclick="salvarPendencia()">SALVAR PENDÊNCIA</button>
+</div>
+
+<!-- ================= PENDÊNCIAS ================= -->
+<div id="pendencias" class="content">
+
+  <table>
+    <thead>
+      <tr>
+        <th>Matrícula</th>
+        <th>Comentário</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody id="listaPendencias"></tbody>
+  </table>
+
 </div>
 
 <!-- MODAL VARIÁVEL -->
@@ -107,27 +125,25 @@ textarea { resize:vertical; }
 </div>
 
 <script>
-// CONFIGURAÇÃO (vem das configs futuramente)
 let tipoAtendimento = "CALL CENTER";
-
 let modeloAtual = "";
+let pendencias = [];
 
-// Referências corretas
 const protocoloInput = document.getElementById("protocolo");
 const comentario = document.getElementById("comentario");
-const modalVar = document.getElementById("modalVar");
-const labelVar = document.getElementById("labelVar");
-const inputVar = document.getElementById("inputVar");
+
+function openTab(evt,id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  evt.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
 
 function gerarInicio() {
   const protocolo = protocoloInput.value.trim();
   if (!protocolo) return;
-
   const inicio = `${tipoAtendimento} PROTOCOLO: ${protocolo} - `;
-
-  if (!comentario.value.startsWith(inicio)) {
-    comentario.value = inicio;
-  }
+  if (!comentario.value.startsWith(inicio)) comentario.value = inicio;
 }
 
 function usarPresetSimples(txt) {
@@ -146,12 +162,8 @@ function presetVariavel(modelo, label) {
 function confirmarVariavel() {
   const valor = inputVar.value.trim().toUpperCase();
   if (!valor) return;
-
-  const texto = modeloAtual.replace("{VAR}", valor);
-
   if (!comentario.value.endsWith(" ")) comentario.value += " ";
-  comentario.value += texto;
-
+  comentario.value += modeloAtual.replace("{VAR}", valor);
   modalVar.style.display = "none";
 }
 
@@ -160,9 +172,42 @@ inputVar.addEventListener("keydown", e => {
 });
 
 function copiarComentario() {
-  let texto = comentario.value.replace(/\n/g, " ").toUpperCase();
-  navigator.clipboard.writeText(texto);
+  const txt = comentario.value.replace(/\n/g," ").toUpperCase();
+  navigator.clipboard.writeText(txt);
   alert("Comentário copiado!");
+}
+
+function salvarPendencia() {
+  const mat = document.getElementById("matricula").value.trim();
+  const txt = comentario.value.trim();
+  if (!mat || !txt) return alert("Matrícula e comentário são obrigatórios.");
+
+  pendencias.push({mat, txt});
+  atualizarTabela();
+  alert("Pendência salva!");
+}
+
+function atualizarTabela() {
+  const tbody = document.getElementById("listaPendencias");
+  tbody.innerHTML = "";
+  pendencias.forEach((p,i)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td onclick="copiarTexto('${p.mat}')">${p.mat}</td>
+      <td onclick="copiarTexto('${p.txt.replace(/'/g,"")}')">${p.txt}</td>
+      <td><button onclick="excluirPendencia(${i})">Excluir</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function copiarTexto(txt){
+  navigator.clipboard.writeText(txt.toUpperCase());
+}
+
+function excluirPendencia(i){
+  pendencias.splice(i,1);
+  atualizarTabela();
 }
 </script>
 
