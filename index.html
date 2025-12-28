@@ -211,6 +211,30 @@ function copiarOS() {
 
 /* INIT */
 carregarPendencias();
+  const OS_INSTRUCOES = {
+  vaz_rua: "Confirmar endereço completo e ponto de referência.",
+  vaz_quadro: "Orientar cliente a fechar o registro se possível.",
+  falta_agua: "Confirmar se há previsão e região afetada."
+};
+
+function iniciarOS() {
+  const tipo = tipoOS.value;
+  const nome = osNome.value.trim();
+  const tel = osTelefone.value.trim();
+
+  if (!tipo || !nome || !tel) {
+    alert("Preencha tipo de O.S., nome e telefone.");
+    return;
+  }
+
+  document.getElementById("os-step-1").style.display = "none";
+  document.getElementById("os-step-2").style.display = "block";
+
+  osInstrucoes.innerText = OS_INSTRUCOES[tipo] || "Siga o procedimento padrão.";
+
+  carregarOS();
+}
+
 </script>
 
   
@@ -417,33 +441,42 @@ button {
 <!-- ================= O.S. ================= -->
 <div id="os" class="content">
 
-  <details>
-    <summary><b>Dados do cliente (consulta)</b></summary>
-    <label>Nome</label>
-    <input>
-    <label>Telefone</label>
-    <input>
-  </details>
+  <!-- ETAPA 1 -->
+  <div id="os-step-1">
+    <label>Tipo de O.S.</label>
+    <select id="tipoOS">
+      <option value="">Selecione</option>
+      <option value="troca_mov">Troca com movimentação</option>
+      <option value="troca_manual">Troca manual</option>
+      <option value="troca_excecao">Troca com exceções</option>
+      <option value="tarifa">Tarifa social</option>
+      <option value="verificacao">Verificação cadastral</option>
+      <option value="supressao">Supressão de esgoto</option>
+      <option value="vaz_quadro">Vazamento no quadro</option>
+      <option value="vaz_rua">Vazamento na rua/calçada</option>
+      <option value="falta_agua">Falta de água</option>
+    </select>
 
-  <label>Tipo de O.S.</label>
-  <select id="tipoOS" onchange="carregarOS()">
-    <option value="">Selecione</option>
-    <option value="troca_mov">Troca com movimentação</option>
-    <option value="troca_manual">Troca manual</option>
-    <option value="troca_excecao">Troca com exceções</option>
-    <option value="tarifa">Tarifa social</option>
-    <option value="verificacao">Verificação cadastral</option>
-    <option value="supressao">Supressão de esgoto</option>
-    <option value="vaz_quadro">Vazamento no quadro</option>
-    <option value="vaz_rua">Vazamento na rua/calçada</option>
-    <option value="falta_agua">Falta de água</option>
-  </select>
+    <label>Nome do cliente</label>
+    <input id="osNome">
 
-  <div id="camposOS"></div>
+    <label>Telefone do cliente</label>
+    <input id="osTelefone">
 
-  <label>Texto da O.S.</label>
-  <textarea id="textoOS" rows="10"></textarea>
+    <button class="btn btn-full" onclick="iniciarOS()">CONTINUAR</button>
+  </div>
 
-  <button class="btn btn-full" onclick="copiarOS()">COPIAR</button>
+  <!-- ETAPA 2 -->
+  <div id="os-step-2" style="display:none;">
+    <div class="box" id="osInstrucoes"></div>
+
+    <div id="camposOS"></div>
+
+    <label>Texto da O.S.</label>
+    <textarea id="textoOS" rows="10"></textarea>
+
+    <button class="btn btn-full" onclick="copiarOS()">COPIAR</button>
+  </div>
 
 </div>
+
