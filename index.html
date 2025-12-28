@@ -444,17 +444,17 @@ button {
   <!-- ETAPA 1 -->
   <div id="os-step-1">
     <label>Tipo de O.S.</label>
-    <select id="tipoOS">
+    <select id="osTipo">
       <option value="">Selecione</option>
-      <option value="troca_mov">Troca com movimentação</option>
-      <option value="troca_manual">Troca manual</option>
-      <option value="troca_excecao">Troca com exceções</option>
-      <option value="tarifa">Tarifa social</option>
-      <option value="verificacao">Verificação cadastral</option>
-      <option value="supressao">Supressão de esgoto</option>
-      <option value="vaz_quadro">Vazamento no quadro</option>
-      <option value="vaz_rua">Vazamento na rua/calçada</option>
-      <option value="falta_agua">Falta de água</option>
+      <option value="148005">148005 – Troca de titularidade (manual / quantitativa)</option>
+      <option value="248005_exc">248005 – Troca de titularidade (com exceções)</option>
+      <option value="248005_mov">248005 – Troca de titularidade (com movimentação de débitos)</option>
+      <option value="103002">103002 – Tarifa social</option>
+      <option value="102002">102002 – Verificação cadastral</option>
+      <option value="118061">118061 – Supressão de ligação de esgoto</option>
+      <option value="119001">119001 – Vazamento no quadro</option>
+      <option value="138001">138001 – Vazamento na rua ou calçada</option>
+      <option value="146004">146004 – Falta de água</option>
     </select>
 
     <label>Nome do cliente</label>
@@ -465,6 +465,26 @@ button {
 
     <button class="btn btn-full" onclick="iniciarOS()">CONTINUAR</button>
   </div>
+
+  <!-- ETAPA 2 -->
+  <div id="os-step-2" style="display:none;">
+
+    <div class="box" id="osInstrucoes"></div>
+
+    <div id="osCampos"></div>
+
+    <label>Texto da O.S.</label>
+    <textarea id="osTexto" rows="10"></textarea>
+
+    <button id="btn148006" class="btn btn-full" style="display:none;" onclick="gerar148006()">
+      GERAR TEXTO OS 148006 – TRANSFERÊNCIA DE DÉBITO
+    </button>
+
+    <button class="btn btn-full" onclick="copiarOSTexto()">COPIAR</button>
+
+  </div>
+</div>
+
 
   <!-- ETAPA 2 -->
   <div id="os-step-2" style="display:none;">
