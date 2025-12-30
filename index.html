@@ -4,345 +4,114 @@
 <meta charset="UTF-8">
 <title>Central de Atendimento</title>
 
-<script>
-/* ================== TABS ================== */
-function openTab(evt, id) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-  evt.target.classList.add('active');
-  document.getElementById(id).classList.add('active');
-}
-
-/* ================== COMENTÁRIOS ================== */
-function canalSelect() {
-  return document.getElementById("canal");
-}
-
-function atualizarPrefixo() {
-  const canal = canalSelect().value;
-  const p = protocolo.value.trim();
-  if (!p) return;
-  comentario.value = `${canal} PROTOCOLO: ${p} - `;
-}
-
-function adicionarTexto(txt) {
-  if (!comentario.value.includes("PROTOCOLO")) atualizarPrefixo();
-  if (!comentario.value.endsWith(" ")) comentario.value += " ";
-  comentario.value += txt;
-}
-
-function copiarComentario() {
-  navigator.clipboard.writeText(comentario.value.toUpperCase());
-}
-
-function atalhoServico(destino) {
-  const tipo = prompt("Informe o tipo de serviço:");
-  if (!tipo) return;
-  adicionarTexto(`SERVIÇO SOLICITADO E NÃO PRESTADO - ${tipo.toUpperCase()} - ENVIADO PARA ${destino}`);
-}
-
-function atalhoSegundaVia() {
-  adicionarTexto("2ª FATURA AGORA - ENVIADA");
-}
-
-function atalhoFaltaAgua() {
-  adicionarTexto("INFORMA FALTA DE ÁGUA - ABERTURA DE SOLICITAÇÃO");
-}
-
-function atalhoAbastecimento() {
-  const previsao = prompt("Informe a previsão (ex: 14H 22/09):");
-  if (!previsao) return;
-  adicionarTexto(`VERIFICAÇÃO SITUAÇÃO ABASTECIMENTO – EXECUTADA (PREVISÃO RETORNO ${previsao.toUpperCase()})`);
-}
-
-/* ================== PENDÊNCIAS ================== */
-let pendencias = JSON.parse(localStorage.getItem("pendencias") || "[]");
-
-function salvarPendencia() {
-  const mat = prompt("Informe a matrícula:");
-  if (!mat) return;
-  pendencias.push({ matricula: mat, texto: comentario.value });
-  localStorage.setItem("pendencias", JSON.stringify(pendencias));
-  carregarPendencias();
-  alert("Pendência salva");
-}
-
-function carregarPendencias() {
-  const tbody = document.getElementById("listaPendencias");
-  tbody.innerHTML = "";
-  pendencias.forEach((p, i) => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${p.matricula}</td>
-        <td>${p.texto.slice(0,60)}...</td>
-        <td>
-          <span class="icon-btn" onclick="navigator.clipboard.writeText('${p.matricula}')">📋</span>
-          <span class="icon-btn" onclick="navigator.clipboard.writeText('${p.texto.replace(/'/g,"")}')">📄</span>
-          <span class="icon-btn" onclick="excluirPendencia(${i})">🗑</span>
-        </td>
-      </tr>
-    `;
-  });
-}
-
-function excluirPendencia(i) {
-  if (!confirm("Excluir pendência?")) return;
-  pendencias.splice(i,1);
-  localStorage.setItem("pendencias", JSON.stringify(pendencias));
-  carregarPendencias();
-}
-
-/* ================== PARALELAS ================== */
-function carregarParalela() {
-  const tipo = tipoParalela.value;
-  let texto = "";
-
-  if (tipo === "cancelamento") texto =
-`CANCELAMENTO DE SOLICITAÇÃO
-
-MATRÍCULA:
-CIDADE:
-PROTOCOLO DO ATENDIMENTO:
-SERVIÇO QUE O CLIENTE SOLICITA O CANCELAMENTO:
-Nº SOLICITAÇÃO:
-MOTIVO DO CANCELAMENTO:`;
-
-  if (tipo === "pipa") texto =
-`CAMINHÃO PIPA
-
-PROTOCOLO DO ATENDIMENTO:
-BAIRRO:
-CIDADE:
-MATRÍCULA:
-ENDEREÇO:
-CELULAR PARA CONTATO:`;
-
-  if (tipo === "retificacao") texto =
-`(SERVIÇO) FORA DO PRAZO, REFERENTE À COMPETÊNCIA: XX/XXXX.
-DATA DA SOLICITAÇÃO:
-MATRÍCULA:
-CIDADE:
-PROTOCOLO DO ATENDIMENTO:`;
-
-  if (tipo === "debito") texto =
-`BLOQUEAR DÉBITO EM CONTA
-
-MATRÍCULA:
-CIDADE:
-PROTOCOLO DO ATENDIMENTO:
-VENCIMENTO: XX/XX/XXXX
-VALOR: R$
-COMPETÊNCIA: XX/XXXX`;
-
-  if (tipo === "exclusao") texto =
-`EXCLUSÃO DE CADASTRO DO SITE/APP
-
-NOME COMPLETO:
-MATRÍCULA:
-CONCESSÃO: CORSAN
-CPF OU CNPJ CADASTRADO:
-E-MAIL CADASTRADO:
-CPF OU CNPJ CORRETO:
-MOTIVO DA SOLICITAÇÃO DE EXCLUSÃO: DADOS INCORRETOS`;
-
-  if (tipo === "religacao") texto =
-`RELIGAÇÃO POR CORTE INDEVIDO – REGIONAL – O.S. XXXXXXX – PROTOCOLO: XXXXXXX
-
-MATRÍCULA:
-CIDADE:
-PROTOCOLO DO ATENDIMENTO:
-VENCIMENTO: XX/XX/XXXX`;
-
-  textoParalela.value = texto;
-}
-
-function copiarParalela() {
-  navigator.clipboard.writeText(textoParalela.value);
-}
-
-/* ================== O.S. ================== */
-const OS_CONFIG = {
-  "148005": {
-    titulo: "OS 148005 – TROCA DE TITULARIDADE - ATENDIMENTO",
-    instrucoes: [
-      "Fazer a troca manual.",
-      "Encerramento automático.",
-      "Utilizada para fins quantitativos."
-    ],
-    tipo: "estruturado",
-    campos: [
-      "CLIENTE ATUAL",
-      "NOVO CLIENTE",
-      "DATA INICIAL CONTRATO",
-      "DOCUMENTOS ANEXOS: ( ) SIM ( ) NÃO",
-      "OBSERVAÇÕES"
-    ]
-  },
-
-  "248005_exc": {
-    titulo: "OS 248005 – TROCA DE TITULARIDADE - CADASTRO",
-    instrucoes: [
-      "Anexar documentação obrigatória."
-    ],
-    tipo: "estruturado",
-    campos: [
-      "CLIENTE ATUAL",
-      "NOVO CLIENTE",
-      "DATA INICIAL CONTRATO",
-      "DOCUMENTOS ANEXOS: ( ) SIM ( ) NÃO",
-      "OBSERVAÇÕES"
-    ]
-  },
-
-  "248005_mov": {
-    titulo: "OS 248005 – TROCA DE TITULARIDADE - CADASTRO",
-    instrucoes: [
-      "Troca com movimentação de débitos.",
-      "Obrigatória abertura da OS 148006."
-    ],
-    tipo: "estruturado",
-    campos: [
-      "CLIENTE ATUAL",
-      "NOVO CLIENTE",
-      "DATA INICIAL CONTRATO",
-      "DOCUMENTOS ANEXOS: ( ) SIM ( ) NÃO",
-      "OBSERVAÇÕES"
-    ],
-    gera148006: true
-  },
-
-  "103002": {
-    titulo: "OS 103002 – ANÁLISE BENEFÍCIO - TARIFA SOCIAL",
-    instrucoes: [
-      "Abrir somente com documentação obrigatória."
-    ],
-    tipo: "estruturado",
-    campos: [
-      "NOME SOLICITANTE",
-      "VÍNCULO COM IMÓVEL",
-      "TELEFONE",
-      "DOCUMENTOS ANEXADOS? ( ) SIM ( ) NÃO"
-    ]
-  },
-
-  "102002": {
-    titulo: "OS 102002 – VERIFICAÇÃO CADASTRAL",
-    instrucoes: [],
-    tipo: "estruturado",
-    campos: [
-      "NOME SOLICITANTE",
-      "VÍNCULO COM IMÓVEL",
-      "TELEFONE",
-      "SOLICITAÇÃO DESEJADA"
-    ]
-  },
-
-  "118061": {
-    titulo: "OS 118061 – ANÁLISE SUPRESSÃO DE ESGOTO",
-    instrucoes: [
-      "Somente para faturamento de esgoto ativo.",
-      "Disponibilidade usar OS 145042."
-    ],
-    tipo: "estruturado",
-    campos: [
-      "MOTIVO DA SOLICITAÇÃO",
-      "TELEFONE"
-    ]
-  },
-
-  "119001": {
-    titulo: "OS 119001 – VAZAMENTO NO QUADRO",
-    instrucoes: [
-      "Responder todas as perguntas operacionais.",
-      "Prazo 24h."
-    ],
-    tipo: "livre"
-  },
-
-  "138001": {
-    titulo: "OS 138001 – VAZAMENTO NA RUA OU CALÇADA",
-    instrucoes: [
-      "Endereço completo.",
-      "Ponto de referência.",
-      "Prazo 48h."
-    ],
-    tipo: "livre"
-  },
-
-  "146004": {
-    titulo: "OS 146004 – FALTA DE ÁGUA",
-    instrucoes: [
-      "Prazo 24h."
-    ],
-    tipo: "estruturado",
-    campos: [
-      "REGISTRO ABERTO",
-      "BAIRRO",
-      "VIZINHOS TÊM ÁGUA",
-      "CELULAR"
-    ]
-  }
-};
-
-function iniciarOS() {
-  const tipo = osTipo.value;
-  if (!tipo || !osNome.value || !osTelefone.value) {
-    alert("Preencha tipo de O.S., nome e telefone.");
-    return;
-  }
-
-  const cfg = OS_CONFIG[tipo];
-  document.getElementById("os-step-1").style.display = "none";
-  document.getElementById("os-step-2").style.display = "block";
-
-  osInstrucoes.innerHTML = "<b>INFORMAÇÕES ADICIONAIS</b><br>" + cfg.instrucoes.join("<br>");
-  osCampos.innerHTML = "";
-  osTexto.value = cfg.titulo.toUpperCase() + "\n\n";
-
-  if (cfg.tipo === "estruturado") {
-    cfg.campos.forEach(c => osTexto.value += c + ":\n");
-  }
-
-  btn148006.style.display = cfg.gera148006 ? "block" : "none";
-}
-
-function gerar148006() {
-  osTexto.value +=
-`\n\nOS 148006 – TRANSFERÊNCIA DE DÉBITOS
-CLIENTE ATUAL:
-NOVO CLIENTE:
-REFERÊNCIAS A MOVIMENTAR:
-OBSERVAÇÕES:`.toUpperCase();
-}
-
-function copiarOSTexto() {
-  navigator.clipboard.writeText(osTexto.value.toUpperCase());
-}
-
-document.addEventListener("DOMContentLoaded", carregarPendencias);
-</script>
-
 <style>
-/* CSS IGUAL AO SEU, SEM ALTERAÇÃO FUNCIONAL */
-body{margin:0;font-family:Arial,sans-serif;background:#f4f4f4}
-header{background:#2f3e46;color:#fff;padding:14px;text-align:center;font-weight:bold}
-.tabs{display:flex;background:#cad2c5}
-.tab{padding:10px 16px;cursor:pointer;border-right:1px solid #999}
-.tab.active{background:#fff;font-weight:bold}
-.content{display:none;padding:16px;background:#fff;height:calc(100vh - 90px);overflow-y:auto}
-.content.active{display:block}
-label{font-weight:bold;display:block;margin-top:10px}
-input,textarea,select{width:100%;padding:8px;margin-top:4px;box-sizing:border-box}
-textarea{resize:vertical}
-button{padding:10px;margin-top:10px;cursor:pointer}
-.btn{background:#2f3e46;color:#fff;border:none;font-weight:bold}
-.btn-full{width:100%}
-.row{display:flex;gap:10px}
-.row button{flex:1}
-.box{background:#eee;padding:10px;margin-top:10px;font-size:13px}
-.table{width:100%;border-collapse:collapse;margin-top:10px}
-.table th,.table td{border:1px solid #ccc;padding:6px;font-size:13px}
-.icon-btn{cursor:pointer;margin-right:6px}
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+}
+
+header {
+  background: #2f3e46;
+  color: #fff;
+  padding: 14px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.tabs {
+  display: flex;
+  background: #cad2c5;
+}
+
+.tab {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-right: 1px solid #999;
+}
+
+.tab.active {
+  background: #fff;
+  font-weight: bold;
+}
+
+.content {
+  display: none;
+  padding: 16px;
+  background: #fff;
+  height: calc(100vh - 90px);
+  overflow-y: auto;
+}
+
+.content.active {
+  display: block;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-top: 10px;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  padding: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.btn {
+  background: #2f3e46;
+  color: #fff;
+  border: none;
+  font-weight: bold;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.row button {
+  flex: 1;
+}
+
+.box {
+  background: #eee;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.table th, .table td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  font-size: 13px;
+}
+
+.icon-btn {
+  cursor: pointer;
+  margin-right: 6px;
+}
 </style>
 </head>
 
@@ -371,26 +140,19 @@ button{padding:10px;margin-top:10px;cursor:pointer}
   <label>Comentário</label>
   <textarea id="comentario" rows="4"></textarea>
 
-  <div class="row">
-    <button class="btn" onclick="atalhoServico('FORMS')">Serviço não prestado – Forms</button>
-    <button class="btn" onclick="atalhoServico('SUPERVISORA')">Serviço não prestado – Supervisora</button>
-  </div>
-
-  <button class="btn btn-full" onclick="atalhoSegundaVia()">2ª VIA ENVIADA</button>
-  <button class="btn btn-full" onclick="atalhoAbastecimento()">Verificação situação abastecimento</button>
-  <button class="btn btn-full" onclick="atalhoFaltaAgua()">Informa falta de água</button>
-
-  <div class="row">
-    <button class="btn" onclick="copiarComentario()">COPIAR</button>
-    <button class="btn" onclick="salvarPendencia()">SALVAR PENDÊNCIA</button>
-  </div>
+  <button class="btn btn-full" onclick="copiarComentario()">COPIAR</button>
+  <button class="btn btn-full" onclick="salvarPendencia()">SALVAR PENDÊNCIA</button>
 </div>
 
 <!-- PENDÊNCIAS -->
 <div id="pendencias" class="content">
   <table class="table">
     <thead>
-      <tr><th>Matrícula</th><th>Comentário</th><th>Ações</th></tr>
+      <tr>
+        <th>Matrícula</th>
+        <th>Comentário</th>
+        <th>Ações</th>
+      </tr>
     </thead>
     <tbody id="listaPendencias"></tbody>
   </table>
@@ -402,13 +164,14 @@ button{padding:10px;margin-top:10px;cursor:pointer}
     <b>SUPERVISORES</b><br>
     kleber.filho@aeparceiros.com.br<br>
     victoria.ferreira@aeparceiros.com.br<br>
-    barbara.piva@aeparceiros.com.br
+    barbara.piva@aeparceiros.com.br<br>
+    carina.saraiva@aeparceiros.com.br
   </div>
 
   <label>Tipo de paralela</label>
   <select id="tipoParalela" onchange="carregarParalela()">
     <option value="">Selecione</option>
-    <option value="cancelamento">Cancelamento</option>
+    <option value="cancelamento">Cancelamento de solicitação</option>
     <option value="pipa">Caminhão pipa</option>
     <option value="retificacao">Retificação fora do prazo</option>
     <option value="debito">Bloquear débito</option>
@@ -416,25 +179,23 @@ button{padding:10px;margin-top:10px;cursor:pointer}
     <option value="religacao">Religação corte indevido</option>
   </select>
 
-  <label>Texto do e-mail</label>
   <textarea id="textoParalela" rows="10"></textarea>
   <button class="btn btn-full" onclick="copiarParalela()">COPIAR</button>
 </div>
 
 <!-- O.S. -->
 <div id="os" class="content">
+
+  <!-- ETAPA 1 -->
   <div id="os-step-1">
     <label>Tipo de O.S.</label>
     <select id="osTipo">
       <option value="">Selecione</option>
-      <option value="148005">148005 – Troca de titularidade (manual)</option>
-      <option value="248005_exc">248005 – Troca de titularidade (exceções)</option>
-      <option value="248005_mov">248005 – Troca de titularidade (movimentação)</option>
+      <option value="138001">138001 – Vazamento rua/calçada</option>
+      <option value="119001">119001 – Vazamento no quadro</option>
       <option value="103002">103002 – Tarifa social</option>
       <option value="102002">102002 – Verificação cadastral</option>
       <option value="118061">118061 – Supressão de esgoto</option>
-      <option value="119001">119001 – Vazamento no quadro</option>
-      <option value="138001">138001 – Vazamento rua/calçada</option>
       <option value="146004">146004 – Falta de água</option>
     </select>
 
@@ -447,20 +208,157 @@ button{padding:10px;margin-top:10px;cursor:pointer}
     <button class="btn btn-full" onclick="iniciarOS()">CONTINUAR</button>
   </div>
 
+  <!-- ETAPA 2 -->
   <div id="os-step-2" style="display:none;">
-    <div class="box" id="osInstrucoes"></div>
-    <div id="osCampos"></div>
+    <button class="btn" onclick="voltarOS()">⬅ VOLTAR</button>
 
-    <label>Texto da O.S.</label>
+    <div class="box" id="osHeader"></div>
+    <div class="box" id="osInfo"></div>
+
+    <label>CONTEÚDO DA O.S.</label>
     <textarea id="osTexto" rows="10"></textarea>
 
-    <button id="btn148006" class="btn btn-full" style="display:none;" onclick="gerar148006()">
-      GERAR TEXTO OS 148006 – TRANSFERÊNCIA DE DÉBITO
-    </button>
-
-    <button class="btn btn-full" onclick="copiarOSTexto()">COPIAR</button>
+    <button class="btn btn-full" onclick="copiarOS()">COPIAR</button>
   </div>
+
 </div>
+
+<script>
+function openTab(evt,id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  evt.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+function atualizarPrefixo(){
+  const canal=document.getElementById("canal").value;
+  const p=document.getElementById("protocolo").value.trim();
+  if(p) comentario.value=`${canal} PROTOCOLO: ${p} - `;
+}
+
+function copiarComentario(){
+  navigator.clipboard.writeText(comentario.value.toUpperCase());
+}
+
+let pendencias=JSON.parse(localStorage.getItem("pendencias")||"[]");
+
+function salvarPendencia(){
+  const mat=prompt("Matrícula:");
+  if(!mat) return;
+  pendencias.push({matricula:mat,texto:comentario.value});
+  localStorage.setItem("pendencias",JSON.stringify(pendencias));
+  carregarPendencias();
+}
+
+function carregarPendencias(){
+  listaPendencias.innerHTML="";
+  pendencias.forEach((p,i)=>{
+    listaPendencias.innerHTML+=`
+      <tr>
+        <td>${p.matricula}</td>
+        <td>${p.texto.slice(0,60)}...</td>
+        <td>
+          <span class="icon-btn" onclick="copiarTexto('${p.matricula}')">📋M</span>
+          <span class="icon-btn" onclick="copiarTexto('${p.texto.replace(/'/g,"")}')">📋C</span>
+          <span class="icon-btn" onclick="excluirPendencia(${i})">🗑</span>
+        </td>
+      </tr>`;
+  });
+}
+
+function copiarTexto(t){navigator.clipboard.writeText(t);}
+function excluirPendencia(i){
+  if(confirm("Excluir?")){
+    pendencias.splice(i,1);
+    localStorage.setItem("pendencias",JSON.stringify(pendencias));
+    carregarPendencias();
+  }
+}
+
+function carregarParalela(){
+  const t=tipoParalela.value;
+  let txt="";
+  if(t==="cancelamento") txt=`CANCELAMENTO DE SOLICITAÇÃO\n\nMATRÍCULA:\nCIDADE:\nPROTOCOLO:\nSERVIÇO:\nNº SOLICITAÇÃO:\nMOTIVO:`;
+  if(t==="pipa") txt=`CAMINHÃO PIPA\n\nPROTOCOLO:\nBAIRRO:\nCIDADE:\nMATRÍCULA:\nENDEREÇO:\nCELULAR:`;
+  if(t==="retificacao") txt=`(SERVIÇO) FORA DO PRAZO – COMPETÊNCIA XX/XXXX\nDATA:\nMATRÍCULA:\nCIDADE:\nPROTOCOLO:`;
+  if(t==="debito") txt=`BLOQUEAR DÉBITO EM CONTA\n\nMATRÍCULA:\nCIDADE:\nPROTOCOLO:\nVENCIMENTO:\nVALOR:\nCOMPETÊNCIA:`;
+  if(t==="exclusao") txt=`EXCLUSÃO CADASTRO SITE/APP\n\nNOME:\nMATRÍCULA:\nCPF:\nEMAIL:\nCPF CORRETO:\nMOTIVO: DADOS INCORRETOS`;
+  if(t==="religacao") txt=`RELIGAÇÃO CORTE INDEVIDO – REGIONAL – O.S XXXXX – PROTOCOLO XXXXX\n\nMATRÍCULA:\nCIDADE:\nVENCIMENTO:`;
+  textoParalela.value=txt;
+}
+
+function copiarParalela(){
+  navigator.clipboard.writeText(textoParalela.value);
+}
+
+const OS_MAP={
+  "138001":{
+    titulo:"138001 – VAZAMENTO RUA/CALÇADA",
+    info:"ENDEREÇO COMPLETO\nPONTO DE REFERÊNCIA\nNUMERAÇÃO\nABASTECIMENTO\nQUANTIDADE DE ÁGUA\nPRAZO: 48H",
+    texto:""
+  },
+  "119001":{
+    titulo:"119001 – VAZAMENTO NO QUADRO",
+    info:"SITUAÇÃO DO ABASTECIMENTO\nQUANTIDADE DE ÁGUA\nREGISTRO COM PROBLEMA\nDESPERDÍCIO\nLIVRE ACESSO\nPRAZO: 24H",
+    texto:""
+  },
+  "103002":{
+    titulo:"103002 – TARIFA SOCIAL",
+    info:"DOCUMENTOS OBRIGATÓRIOS\nCOMPROVANTE DE BENEFÍCIO\nDOCUMENTO COM FOTO\nCOMPROVANTE DE RESIDÊNCIA",
+    texto:`ANÁLISE BENEFÍCIO - TARIFA SOCIAL
+NOME SOLICITANTE:
+VÍNCULO COM IMÓVEL:
+TELEFONE:
+DOCUMENTOS ANEXADOS?`
+  },
+  "102002":{
+    titulo:"102002 – VERIFICAÇÃO CADASTRAL",
+    info:"",
+    texto:`VERIFICAÇÃO CADASTRAL
+NOME SOLICITANTE:
+VÍNCULO COM IMÓVEL:
+TELEFONE:
+SOLICITAÇÃO DESEJADA:`
+  },
+  "118061":{
+    titulo:"118061 – SUPRESSÃO ESGOTO",
+    info:"APENAS CLIENTES COM ESGOTO FATURADO",
+    texto:`ANÁLISE SUPRESSÃO DE ESGOTO
+MOTIVO:
+TELEFONE:`
+  },
+  "146004":{
+    titulo:"146004 – FALTA DE ÁGUA",
+    info:"PRAZO 24H",
+    texto:`REGISTRO ABERTO:
+BAIRRO:
+VIZINHOS TEM ÁGUA:
+CELULAR:`
+  }
+};
+
+function iniciarOS(){
+  const t=osTipo.value;
+  if(!t) return alert("Selecione a O.S.");
+  osHeader.innerText=`${OS_MAP[t].titulo}\nCLIENTE: ${osNome.value} | TEL: ${osTelefone.value}`;
+  osInfo.innerText=OS_MAP[t].info;
+  osTexto.value=OS_MAP[t].texto;
+  document.getElementById("os-step-1").style.display="none";
+  document.getElementById("os-step-2").style.display="block";
+}
+
+function voltarOS(){
+  document.getElementById("os-step-2").style.display="none";
+  document.getElementById("os-step-1").style.display="block";
+}
+
+function copiarOS(){
+  navigator.clipboard.writeText(osTexto.value.toUpperCase());
+}
+
+carregarPendencias();
+</script>
 
 </body>
 </html>
